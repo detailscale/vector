@@ -1,5 +1,6 @@
 import { Outfit } from "next/font/google";
 import "./globals.css";
+import React from "react";
 
 const outfit = Outfit({
   variable: "--font-geist-sans",
