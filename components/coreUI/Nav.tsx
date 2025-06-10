@@ -25,7 +25,7 @@ export default function Nav() {
 
   return (
     <div className="font-outfit">
-      <nav className="grid h-8 flex-shrink-0 grid-cols-3 items-center bg-neutral-800 px-4 text-neutral-300 text-sm">
+      <nav className="grid h-8 flex-shrink-0 grid-cols-3 items-center bg-[#171717] px-4 text-neutral-300 text-sm">
         <div className="relative select-none">psord</div>
         <div></div>
         <div className="justify-self-end">{formattedTime}</div>
