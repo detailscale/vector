@@ -1,5 +1,6 @@
 import Nav from "@/components/coreUI/Nav";
 import TopSearchModule from "@/components/coreUI/topSearchModule";
+import CompactStoreList from "@/components/coreUI/compactStoreList";
 
 export default function Home() {
   return (
@@ -7,6 +8,9 @@ export default function Home() {
       <Nav />
       <div className="pt-10">
         <TopSearchModule />
+      </div>
+      <div className="font-outfit">
+        <CompactStoreList />
       </div>
     </main>
   );
