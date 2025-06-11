@@ -109,7 +109,7 @@ export default function ContextSearch() {
   }, [searchValue, restaurants]);
 
   return (
-    <div className="flex items-center justify-center p-4 dark">
+    <div className="flex items-center justify-center my-4 dark">
       <Command className="rounded-lg border shadow-md md:min-w-[500px] max-w-2xl">
         <CommandInput
           placeholder="Search restaurants or menu items..."
