@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChefHat, Coffee, Pizza, Utensils } from "lucide-react";
+import { ChefHat, Coffee, LucideIcon, Pizza, Utensils } from "lucide-react";
 
 import {
   Command,
@@ -12,124 +12,64 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-// mock data for restaurants and their menus
-const restaurants = [
-  {
-    id: 1,
-    name: "Bella Italia",
-    cuisine: "Italian",
-    icon: Pizza,
-    menu: [
-      {
-        name: "Margherita Pizza",
-        price: "$18",
-        description: "Fresh mozzarella, tomato sauce, basil",
-      },
-      {
-        name: "Spaghetti Carbonara",
-        price: "$22",
-        description: "Eggs, pancetta, parmesan, black pepper",
-      },
-      {
-        name: "Tiramisu",
-        price: "$12",
-        description: "Classic Italian dessert with coffee and mascarpone",
-      },
-      {
-        name: "Caesar Salad",
-        price: "$14",
-        description: "Romaine lettuce, croutons, parmesan",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Tokyo Sushi Bar",
-    cuisine: "Japanese",
-    icon: ChefHat,
-    menu: [
-      {
-        name: "Salmon Sashimi",
-        price: "$24",
-        description: "Fresh Atlantic salmon, 8 pieces",
-      },
-      {
-        name: "Dragon Roll",
-        price: "$16",
-        description: "Eel, cucumber, avocado, eel sauce",
-      },
-      {
-        name: "Miso Soup",
-        price: "$6",
-        description: "Traditional soybean paste soup",
-      },
-      {
-        name: "Chicken Teriyaki",
-        price: "$19",
-        description: "Grilled chicken with teriyaki glaze",
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: "The Coffee House",
-    cuisine: "Cafe",
-    icon: Coffee,
-    menu: [
-      {
-        name: "Cappuccino",
-        price: "$5",
-        description: "Espresso with steamed milk foam",
-      },
-      {
-        name: "Avocado Toast",
-        price: "$12",
-        description: "Sourdough bread with smashed avocado",
-      },
-      {
-        name: "Blueberry Muffin",
-        price: "$4",
-        description: "Fresh baked with wild blueberries",
-      },
-      {
-        name: "Green Smoothie",
-        price: "$8",
-        description: "Spinach, banana, apple, ginger",
-      },
-    ],
-  },
-  {
-    id: 4,
-    name: "Spice Garden",
-    cuisine: "Indian",
-    icon: Utensils,
-    menu: [
-      {
-        name: "Butter Chicken",
-        price: "$20",
-        description: "Creamy tomato curry with tender chicken",
-      },
-      {
-        name: "Biryani",
-        price: "$18",
-        description: "Fragrant basmati rice with spices",
-      },
-      {
-        name: "Naan Bread",
-        price: "$5",
-        description: "Traditional Indian flatbread",
-      },
-      {
-        name: "Mango Lassi",
-        price: "$6",
-        description: "Yogurt drink with fresh mango",
-      },
-    ],
-  },
-];
+interface MenuItem {
+  name: string;
+  price: string;
+  description: string;
+}
+
+interface RestaurantJson {
+  id: number;
+  name: string;
+  cuisine: string;
+  icon: string;
+  menu: MenuItem[];
+}
+
+interface RestaurantProcessed {
+  id: number;
+  name: string;
+  cuisine: string;
+  icon: LucideIcon;
+  menu: MenuItem[];
+}
+
+const iconMap: { [key: string]: LucideIcon } = {
+  Pizza: Pizza,
+  ChefHat: ChefHat,
+  Coffee: Coffee,
+  Utensils: Utensils,
+};
 
 export default function ContextSearch() {
   const [searchValue, setSearchValue] = React.useState("");
+  const [restaurants, setRestaurants] = React.useState<RestaurantProcessed[]>(
+    [],
+  );
+
+  React.useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        const response = await fetch("/testData/stores.json");
+        if (!response.ok) {
+          console.error("ID[3] HTTP error ", response.status);
+        }
+        const data: RestaurantJson[] = await response.json();
+        const processedData: RestaurantProcessed[] = data.map((restaurant) => ({
+          ...restaurant,
+          icon: iconMap[restaurant.icon] || Utensils,
+        }));
+        setRestaurants(processedData);
+      } catch (error) {
+        console.error("ID[2] Fetch error ", error);
+        setRestaurants([]);
+      }
+    };
+
+    fetchRestaurants().catch((error) => {
+      console.error("ID[1] Fetch error ", error);
+    });
+  }, []);
 
   const filteredRestaurants = React.useMemo(() => {
     if (!searchValue) return restaurants;
@@ -139,15 +79,15 @@ export default function ContextSearch() {
         restaurant.name.toLowerCase().includes(searchValue.toLowerCase()) ||
         restaurant.cuisine.toLowerCase().includes(searchValue.toLowerCase()),
     );
-  }, [searchValue]);
+  }, [searchValue, restaurants]);
 
   const filteredMenuItems = React.useMemo(() => {
     if (!searchValue) return [];
 
     const menuItems: Array<{
       restaurantName: string;
-      restaurantIcon: React.ComponentType<{ className?: string }>;
-      item: { name: string; price: string; description: string };
+      restaurantIcon: LucideIcon;
+      item: MenuItem;
     }> = [];
 
     restaurants.forEach((restaurant) => {
@@ -166,7 +106,7 @@ export default function ContextSearch() {
     });
 
     return menuItems;
-  }, [searchValue]);
+  }, [searchValue, restaurants]);
 
   return (
     <div className="flex items-center justify-center p-4 dark">
@@ -177,7 +117,7 @@ export default function ContextSearch() {
           onValueChange={setSearchValue}
         />
         <CommandList className="max-h-[400px]">
-          <CommandEmpty>No restaurants or menu items found.</CommandEmpty>
+          <CommandEmpty>No data loaded.</CommandEmpty>
 
           {filteredRestaurants.length > 0 && (
             <CommandGroup heading="Restaurants">
@@ -207,7 +147,7 @@ export default function ContextSearch() {
                 const IconComponent = menuItem.restaurantIcon;
                 return (
                   <CommandItem
-                    key={index}
+                    key={`${menuItem.restaurantName}-${menuItem.item.name}-${index}`}
                     className="flex items-center gap-3 p-3"
                   >
                     <IconComponent className="h-4 w-4 text-orange-500" />
@@ -220,7 +160,10 @@ export default function ContextSearch() {
                       </span>
                     </div>
                     <span className="text-sm font-medium text-green-600">
-                      {menuItem.item.price}
+                      <span className="text-xl text-neutral-100">
+                        {menuItem.item.price}
+                      </span>{" "}
+                      <span className="text-neutral-300 font-medium">THB</span>
                     </span>
                   </CommandItem>
                 );
