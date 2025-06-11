@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 interface MenuItem {
   name: string;
@@ -16,6 +17,7 @@ interface Restaurant {
   icon: string;
   ratings: number;
   menu: MenuItem[];
+  pageURL: string;
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -97,20 +99,19 @@ export default function CompactStoreList() {
       <h2 className="text-xl mb-3">Explore</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {restaurants.map((restaurant) => (
-          <Card
-            key={restaurant.id}
-            className="duration-150 cursor-pointer hover:bg-neutral-800 ease-in-out"
-          >
-            <CardContent>
-              <h3 className="text-base font-medium">{restaurant.name}</h3>
-              <div className="flex justify-between items-center mt-1">
-                <span className="text-xs text-muted-foreground capitalize">
-                  {restaurant.cuisine}
-                </span>
-                <StarRating rating={restaurant.ratings} />
-              </div>
-            </CardContent>
-          </Card>
+          <Link href={`/stores/${restaurant.pageURL}`} key={restaurant.id}>
+            <Card className="duration-150 cursor-pointer hover:bg-neutral-800 ease-in-out">
+              <CardContent>
+                <h3 className="text-base font-medium">{restaurant.name}</h3>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-xs text-muted-foreground capitalize">
+                    {restaurant.cuisine}
+                  </span>
+                  <StarRating rating={restaurant.ratings} />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
