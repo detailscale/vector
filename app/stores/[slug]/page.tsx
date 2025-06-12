@@ -49,7 +49,7 @@ async function getStoreData(slug: string): Promise<Store | undefined> {
 export default async function StorePage({
   params: paramsInput,
 }: StorePageProps) {
-  const { slug } = paramsInput;
+  const { slug } = await paramsInput;
 
   console.log("Resolved slug:", slug);
 
