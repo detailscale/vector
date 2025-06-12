@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ChefHat, Coffee, LucideIcon, Pizza, Utensils } from "lucide-react";
+import fuzzysort from "fuzzysort";
 
 import {
   Command,
@@ -32,6 +33,12 @@ interface RestaurantProcessed {
   cuisine: string;
   icon: LucideIcon;
   menu: MenuItem[];
+}
+
+interface DisplayableMenuItem {
+  restaurantName: string;
+  restaurantIcon: LucideIcon;
+  item: MenuItem;
 }
 
 const iconMap: { [key: string]: LucideIcon } = {
@@ -73,40 +80,53 @@ export default function ContextSearch() {
 
   const filteredRestaurants = React.useMemo(() => {
     if (!searchValue) return restaurants;
-
-    return restaurants.filter(
-      (restaurant) =>
-        restaurant.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-        restaurant.cuisine.toLowerCase().includes(searchValue.toLowerCase()),
-    );
+    const results = fuzzysort.go(searchValue, restaurants, {
+      keys: ["name", "cuisine"],
+      threshold: -10000,
+    });
+    return results.map((result) => result.obj);
   }, [searchValue, restaurants]);
 
-  const filteredMenuItems = React.useMemo(() => {
-    if (!searchValue) return [];
+  const allDisplayableMenuItems = React.useMemo((): DisplayableMenuItem[] => {
+    return restaurants.flatMap((restaurant) =>
+      restaurant.menu.map((item) => ({
+        restaurantName: restaurant.name,
+        restaurantIcon: restaurant.icon,
+        item: item,
+      })),
+    );
+  }, [restaurants]);
 
-    const menuItems: Array<{
-      restaurantName: string;
-      restaurantIcon: LucideIcon;
-      item: MenuItem;
-    }> = [];
+  const filteredMenuItems = React.useMemo((): DisplayableMenuItem[] => {
+    if (!searchValue) {
+      return allDisplayableMenuItems;
+    }
 
-    restaurants.forEach((restaurant) => {
-      restaurant.menu.forEach((item) => {
-        if (
-          item.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-          item.description.toLowerCase().includes(searchValue.toLowerCase())
-        ) {
-          menuItems.push({
-            restaurantName: restaurant.name,
-            restaurantIcon: restaurant.icon,
-            item,
-          });
-        }
-      });
+    const allMenuItemsToSearch = restaurants.flatMap((restaurant) =>
+      restaurant.menu.map((item) => ({
+        itemName: item.name,
+        itemDescription: item.description,
+        originalItem: item,
+        restaurantName: restaurant.name,
+        restaurantIcon: restaurant.icon,
+      })),
+    );
+
+    if (allMenuItemsToSearch.length === 0) return [];
+
+    const results = fuzzysort.go(searchValue, allMenuItemsToSearch, {
+      keys: ["itemName", "itemDescription"],
+      threshold: -10000,
     });
 
-    return menuItems;
-  }, [searchValue, restaurants]);
+    return results.map(
+      (result): DisplayableMenuItem => ({
+        restaurantName: result.obj.restaurantName,
+        restaurantIcon: result.obj.restaurantIcon,
+        item: result.obj.originalItem,
+      }),
+    );
+  }, [searchValue, restaurants, allDisplayableMenuItems]);
 
   return (
     <div className="flex items-center justify-center my-4 dark">
@@ -117,7 +137,11 @@ export default function ContextSearch() {
           onValueChange={setSearchValue}
         />
         <CommandList className="max-h-[400px]">
-          <CommandEmpty>No data loaded.</CommandEmpty>
+          <CommandEmpty>
+            {restaurants.length === 0 && searchValue === ""
+              ? "Loading data..."
+              : "No results found."}
+          </CommandEmpty>
 
           {filteredRestaurants.length > 0 && (
             <CommandGroup heading="Restaurants">
