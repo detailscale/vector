@@ -19,10 +19,10 @@ interface MenuItem {
 }
 
 interface SystemStatus {
-  isOnline: boolean;
+  isOnline: string;
   queueCount: number;
   queueTimeMin: number;
-  receivingOrders: boolean;
+  receivingOrders: string;
 }
 
 interface Restaurant {
@@ -101,7 +101,10 @@ export default function CompactStoreList() {
                     <span className="text-xs text-muted-foreground capitalize">
                       {restaurant.cuisine}
                     </span>
-                    <p className="text-xs">{restaurant.activeOrders} Active {restaurant.activeOrders == 1 ? 'Order' : 'Orders'}</p>
+                    <p className="text-xs">
+                      {restaurant.activeOrders} Active{" "}
+                      {restaurant.activeOrders == 1 ? "Order" : "Orders"}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -129,36 +132,74 @@ export default function CompactStoreList() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Wifi className="h-4 w-4 text-green-500" />
-                        <span className="text-sm font-medium text-neutral-300">POS System</span>
+                        <span className="text-sm font-medium text-neutral-300">
+                          POS System
+                        </span>
                       </div>
-                      <Badge
-                        variant="secondary"
-                        className="bg-green-900/50 text-green-400 hover:bg-green-900/70 border border-green-800 font-normal"
-                      >
-                        Online
-                      </Badge>
+                      {restaurant.status[0].isOnline == "true" ? (
+                        <Badge
+                          variant="secondary"
+                          className="bg-green-900/50 text-green-400 border border-green-800 font-normal"
+                        >
+                          Online
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="secondary"
+                          className="bg-red-900/50 text-red-400 border border-red-800"
+                        >
+                          Offline
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm font-medium text-neutral-300">Queue Length</span>
+                        <span className="text-sm font-medium text-neutral-300">
+                          Queue Length
+                        </span>
                       </div>
-                      <span className="text-sm text-neutral-200">{restaurant.status[0].queueCount} {restaurant.status[0].queueCount == 1 ? 'Order' : 'Orders'}</span>
+                      <span className="text-sm text-neutral-200">
+                        {restaurant.status[0].queueCount}{" "}
+                        {restaurant.status[0].queueCount == 1
+                          ? "Order"
+                          : "Orders"}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-orange-500" />
-                        <span className="text-sm font-medium text-neutral-300">Approx. Wait Time</span>
+                        <span className="text-sm font-medium text-neutral-300">
+                          Approx. Wait Time
+                        </span>
                       </div>
-                      <span className="text-sm text-neutral-200">15-20 min</span>
+                      <span className="text-sm text-neutral-200">
+                        {restaurant.status[0].queueTimeMin}{" "}
+                        {restaurant.status[0].queueTimeMin == 1
+                          ? "Minute"
+                          : "Minutes"}
+                      </span>
                     </div>
 
                     <div className="pt-2 border-t border-neutral-800">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-neutral-300">Order Status</span>
-                        <Badge className="bg-green-700 hover:bg-green-800 text-white font-normal">Accepting Orders</Badge>
+                        <span className="text-sm font-medium text-neutral-300">
+                          Order Status
+                        </span>
+                        {restaurant.status[0].receivingOrders == "true" ? (
+                          <Badge className="bg-green-900/50 text-green-400 border border-green-800 font-normal">
+                            Accepting Orders
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="secondary"
+                            className="bg-red-900/50 text-red-400 border border-red-800"
+                          >
+                            Not Accepting Orders
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </CardContent>
