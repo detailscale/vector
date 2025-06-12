@@ -2,7 +2,14 @@
 
 import * as React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import Link from "next/link";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import DynamicLucideIcon from "@/components/coreUI/customIcons";
+import { icons } from "lucide-react";
 
 interface MenuItem {
   name: string;
@@ -20,7 +27,7 @@ interface Restaurant {
   pageURL: string;
 }
 
-function StarRating({ rating }: { rating: number }) {
+export function StarRating({ rating }: { rating: number }) {
   const fullStars = Math.floor(rating);
   const hasHalfStar = rating % 1 >= 0.5;
 
@@ -30,7 +37,7 @@ function StarRating({ rating }: { rating: number }) {
         {[...Array(5)].map((_, i) => (
           <span
             key={i}
-            className={`text-sm ${
+            className={`${
               i < fullStars
                 ? "text-yellow-400"
                 : i === fullStars && hasHalfStar
@@ -42,9 +49,7 @@ function StarRating({ rating }: { rating: number }) {
           </span>
         ))}
       </div>
-      <span className="text-xs text-muted-foreground ml-1">
-        {rating.toFixed(1)}
-      </span>
+      <span className="text-muted-foreground ml-1">{rating.toFixed(1)}</span>
     </div>
   );
 }
@@ -99,19 +104,45 @@ export default function CompactStoreList() {
       <h2 className="text-xl mb-3">Explore</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {restaurants.map((restaurant) => (
-          <Link href={`/stores/${restaurant.pageURL}`} key={restaurant.id}>
-            <Card className="duration-150 cursor-pointer hover:bg-neutral-800 ease-in-out">
-              <CardContent>
-                <h3 className="text-base font-medium">{restaurant.name}</h3>
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-xs text-muted-foreground capitalize">
-                    {restaurant.cuisine}
-                  </span>
-                  <StarRating rating={restaurant.ratings} />
+          <Drawer key={restaurant.id}>
+            <DrawerTrigger asChild>
+              <Card
+                className="duration-150 cursor-pointer hover:bg-neutral-800 ease-in-out"
+                key={restaurant.id}
+              >
+                <CardContent>
+                  <h3 className="text-base font-medium text-left">
+                    {restaurant.name}
+                  </h3>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-xs text-muted-foreground capitalize">
+                      {restaurant.cuisine}
+                    </span>
+                    <StarRating rating={restaurant.ratings} />
+                  </div>
+                </CardContent>
+              </Card>
+            </DrawerTrigger>
+            <DrawerContent className="dark font-outfit max-w-2xl mx-auto">
+              <DrawerTitle className="text-center my-2">
+                Order for {restaurant.name}
+              </DrawerTitle>
+              <div className="mx-4 mb-8 flex items-center">
+                <DynamicLucideIcon
+                  iconName={restaurant.icon as keyof typeof icons}
+                ></DynamicLucideIcon>
+                <div className="ml-3">
+                  <p className="text-lg">{restaurant.name}</p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-sm text-muted-foreground capitalize">
+                      {restaurant.cuisine}
+                    </p>
+                    <StarRating rating={restaurant.ratings} />
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
+              </div>
+            </DrawerContent>
+          </Drawer>
         ))}
       </div>
     </div>
