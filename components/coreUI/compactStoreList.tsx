@@ -33,7 +33,6 @@ interface Restaurant {
   ratings: number;
   menu: MenuItem[];
   pageURL: string;
-  activeOrders: number;
   status: SystemStatus[];
 }
 
@@ -102,8 +101,10 @@ export default function CompactStoreList() {
                       {restaurant.cuisine}
                     </span>
                     <p className="text-xs">
-                      {restaurant.activeOrders} Active{" "}
-                      {restaurant.activeOrders == 1 ? "Order" : "Orders"}
+                      {restaurant.status[0].queueCount} Active{" "}
+                      {restaurant.status[0].queueCount == 1
+                        ? "Order"
+                        : "Orders"}
                     </p>
                   </div>
                 </CardContent>
