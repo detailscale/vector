@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import DynamicLucideIcon from "@/components/coreUI/customIcons";
-import { Clock, icons, ShoppingCart, Users, Wifi } from "lucide-react";
+import { Ban, Clock, icons, ShoppingCart, Users, Wifi } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -35,8 +35,8 @@ interface CompactStoreListDrawerItemsProps {
 }
 
 export default function CompactStoreListDrawerItems({
-                                                      restaurant
-                                                    }: CompactStoreListDrawerItemsProps) {
+  restaurant,
+}: CompactStoreListDrawerItemsProps) {
   return (
     <DrawerContent className="dark font-outfit max-w-2xl mx-auto mb-4">
       <DrawerTitle className="text-center my-2">
@@ -44,9 +44,7 @@ export default function CompactStoreListDrawerItems({
       </DrawerTitle>
 
       <div className="mx-4 mb-8 flex items-center">
-        <DynamicLucideIcon
-          iconName={restaurant.icon as keyof typeof icons}
-        />
+        <DynamicLucideIcon iconName={restaurant.icon as keyof typeof icons} />
         <div className="ml-3">
           <p className="text-lg">{restaurant.name}</p>
           <div className="flex items-center space-x-2">
@@ -136,17 +134,30 @@ export default function CompactStoreListDrawerItems({
           <p className="text-xl">Menu</p>
           <div className="pt-2">
             {restaurant.menu.map((item, index) => (
-              <div key={index} className="border border-neutral-800 rounded-md p-4 mb-3">
+              <div
+                key={index}
+                className="border border-neutral-800 rounded-md p-4 mb-3"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-md">{item.name}</p>
-                    <p className="text-sm text-neutral-400"><span className="text-xl">{item.price}</span>{" "}<span className="font-medium">THB</span></p>
+                    <p className="text-sm text-neutral-400">
+                      <span className="text-xl">{item.price}</span>{" "}
+                      <span className="font-medium">THB</span>
+                    </p>
                   </div>
 
-                  <Button className="cursor-pointer w-22">
-                    <ShoppingCart />
-                    Order
-                  </Button>
+                  {restaurant.status[0].receivingOrders == "true" ? (
+                    <Button className="cursor-pointer w-22">
+                      <ShoppingCart />
+                      Order
+                    </Button>
+                  ) : (
+                    <Button className="cursor-pointer w-32" disabled>
+                      <Ban />
+                      Unavailable
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
