@@ -38,7 +38,7 @@ export default function CompactStoreListDrawerItems({
   restaurant,
 }: CompactStoreListDrawerItemsProps) {
   return (
-    <DrawerContent className="dark font-outfit fixed bottom-0 left-0 right-0 max-w-full flex flex-col rounded-t-[10px] h-[80%] outline-none">
+    <DrawerContent className="dark font-outfit fixed bottom-0 left-0 right-0 w-full max-w-2xl mx-auto flex flex-col rounded-t-[10px] h-[80%] outline-none">
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto pb-2">
           <DrawerTitle className="text-center my-2 sticky top-0 bg-[#0a0a0a] pb-1 mb-3">
