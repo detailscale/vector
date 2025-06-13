@@ -147,7 +147,7 @@ export default function CompactStoreList() {
                       ) : (
                         <Badge
                           variant="secondary"
-                          className="bg-red-900/50 text-red-400 border border-red-800"
+                          className="bg-red-900/50 text-red-400 border border-red-800 font-normal"
                         >
                           Offline
                         </Badge>
@@ -196,7 +196,7 @@ export default function CompactStoreList() {
                         ) : (
                           <Badge
                             variant="secondary"
-                            className="bg-red-900/50 text-red-400 border border-red-800"
+                            className="bg-red-900/50 text-red-400 border border-red-800 font-normal"
                           >
                             Not Accepting Orders
                           </Badge>
