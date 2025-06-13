@@ -67,7 +67,7 @@ export default function CompactStoreList() {
     return (
       <div className="w-full max-w-2xl mx-auto dark">
         <h2 className="text-xl mb-3">Explore</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid xs:grid-cols-1 sm:grid-cols-2 gap-4">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent>
@@ -84,7 +84,7 @@ export default function CompactStoreList() {
   return (
     <div className="w-full max-w-2xl mx-auto dark">
       <h2 className="text-xl mb-3">Explore</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid xs:grid-cols-1 sm:grid-cols-2 gap-4">
         {restaurants.map((restaurant) => (
           <Drawer key={restaurant.id}>
             <DrawerTrigger asChild>
