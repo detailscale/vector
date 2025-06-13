@@ -153,7 +153,7 @@ export default function CompactStoreListDrawerItems({
                       Order
                     </Button>
                   ) : (
-                    <Button className="cursor-pointer w-32" disabled>
+                    <Button className="w-32" disabled>
                       <Ban />
                       Unavailable
                     </Button>
