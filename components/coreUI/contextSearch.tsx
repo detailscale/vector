@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ChefHat, Coffee, LucideIcon, Pizza, Utensils } from "lucide-react";
+import fuzzysort from "fuzzysort";
 
 import {
   Command,
@@ -49,18 +50,16 @@ const iconMap: { [key: string]: LucideIcon } = {
 
 export default function ContextSearch() {
   const [searchValue, setSearchValue] = React.useState("");
-  const [restaurants, setRestaurants] = React.useState<RestaurantProcessed[]>([]);
-  const [filteredRestaurants, setFilteredRestaurants] = React.useState<RestaurantProcessed[]>([]);
-  const [filteredMenuItems, setFilteredMenuItems] = React.useState<DisplayableMenuItem[]>([]);
+  const [restaurants, setRestaurants] = React.useState<RestaurantProcessed[]>(
+    [],
+  );
 
-  // Fetch restaurants
   React.useEffect(() => {
     const fetchRestaurants = async () => {
       try {
         const response = await fetch("/testData/stores.json");
         if (!response.ok) {
           console.error("ID[3] HTTP error ", response.status);
-          return;
         }
         const data: RestaurantJson[] = await response.json();
         const processedData: RestaurantProcessed[] = data.map((restaurant) => ({
@@ -74,78 +73,68 @@ export default function ContextSearch() {
       }
     };
 
-    fetchRestaurants();
+    fetchRestaurants().catch((error) => {
+      console.error("ID[1] Fetch error ", error);
+    });
   }, []);
 
-  // Real-time search effect
-  React.useEffect(() => {
-    const performSearch = () => {
-      const searchTerm = searchValue.trim().toLowerCase();
-      
-      if (!searchTerm) {
-        // Show all when no search term
-        setFilteredRestaurants(restaurants);
-        const allMenuItems = restaurants.flatMap((restaurant) =>
-          (restaurant.menu || []).map((item) => ({
-            restaurantName: restaurant.name,
-            restaurantIcon: restaurant.icon,
-            item: item,
-          }))
-        );
-        setFilteredMenuItems(allMenuItems);
-        return;
-      }
-
-      // Filter restaurants
-      const matchingRestaurants = restaurants.filter((restaurant) => {
-        const nameMatch = restaurant.name.toLowerCase().includes(searchTerm);
-        const cuisineMatch = restaurant.cuisine.toLowerCase().includes(searchTerm);
-        return nameMatch || cuisineMatch;
-      });
-
-      // Filter menu items
-      const matchingMenuItems: DisplayableMenuItem[] = [];
-      
-      restaurants.forEach((restaurant) => {
-        if (restaurant.menu && Array.isArray(restaurant.menu)) {
-          restaurant.menu.forEach((item) => {
-            const nameMatch = item.name.toLowerCase().includes(searchTerm);
-            const descMatch = (item.description || '').toLowerCase().includes(searchTerm);
-            const restMatch = restaurant.name.toLowerCase().includes(searchTerm);
-            
-            if (nameMatch || descMatch || restMatch) {
-              matchingMenuItems.push({
-                restaurantName: restaurant.name,
-                restaurantIcon: restaurant.icon,
-                item: item,
-              });
-            }
-          });
-        }
-      });
-
-      setFilteredRestaurants(matchingRestaurants);
-      setFilteredMenuItems(matchingMenuItems);
-    };
-
-    performSearch();
+  const filteredRestaurants = React.useMemo(() => {
+    if (!searchValue) return restaurants;
+    const results = fuzzysort.go(searchValue, restaurants, {
+      keys: ["name", "cuisine"],
+      threshold: -10000,
+    });
+    return results.map((result) => result.obj);
   }, [searchValue, restaurants]);
 
-  // Handle input change with forced re-render
-  const handleInputChange = React.useCallback((value: string) => {
-    setSearchValue(value);
-  }, []);
+  const allDisplayableMenuItems = React.useMemo((): DisplayableMenuItem[] => {
+    return restaurants.flatMap((restaurant) =>
+      restaurant.menu.map((item) => ({
+        restaurantName: restaurant.name,
+        restaurantIcon: restaurant.icon,
+        item: item,
+      })),
+    );
+  }, [restaurants]);
+
+  const filteredMenuItems = React.useMemo((): DisplayableMenuItem[] => {
+    if (!searchValue) {
+      return allDisplayableMenuItems;
+    }
+
+    const allMenuItemsToSearch = restaurants.flatMap((restaurant) =>
+      restaurant.menu.map((item) => ({
+        itemName: item.name,
+        itemDescription: item.description,
+        originalItem: item,
+        restaurantName: restaurant.name,
+        restaurantIcon: restaurant.icon,
+      })),
+    );
+
+    if (allMenuItemsToSearch.length === 0) return [];
+
+    const results = fuzzysort.go(searchValue, allMenuItemsToSearch, {
+      keys: ["itemName", "itemDescription"],
+      threshold: -10000,
+    });
+
+    return results.map(
+      (result): DisplayableMenuItem => ({
+        restaurantName: result.obj.restaurantName,
+        restaurantIcon: result.obj.restaurantIcon,
+        item: result.obj.originalItem,
+      }),
+    );
+  }, [searchValue, restaurants, allDisplayableMenuItems]);
 
   return (
     <div className="flex items-center justify-center my-4 dark">
-      <Command 
-        className="rounded-lg border shadow-md md:min-w-[500px] max-w-2xl"
-        shouldFilter={false} // Disable internal filtering since we handle it ourselves
-      >
+      <Command className="rounded-lg border shadow-md md:min-w-[500px] max-w-2xl">
         <CommandInput
           placeholder="Search restaurants or menu items..."
           value={searchValue}
-          onValueChange={handleInputChange}
+          onValueChange={setSearchValue}
         />
         <CommandList className="max-h-[400px]">
           <CommandEmpty>
@@ -160,7 +149,7 @@ export default function ContextSearch() {
                 const IconComponent = restaurant.icon;
                 return (
                   <CommandItem
-                    key={`restaurant-${restaurant.id}`}
+                    key={restaurant.id}
                     className="flex items-center gap-3 p-3"
                   >
                     <IconComponent className="h-5 w-5 text-orange-500" />
@@ -182,7 +171,7 @@ export default function ContextSearch() {
                 const IconComponent = menuItem.restaurantIcon;
                 return (
                   <CommandItem
-                    key={`menu-${menuItem.restaurantName}-${menuItem.item.name}-${index}`}
+                    key={`${menuItem.restaurantName}-${menuItem.item.name}-${index}`}
                     className="flex items-center gap-3 p-3"
                   >
                     <IconComponent className="h-4 w-4 text-orange-500" />
