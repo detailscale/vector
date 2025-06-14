@@ -53,7 +53,6 @@ export default function ContextSearch() {
   const [filteredRestaurants, setFilteredRestaurants] = React.useState<RestaurantProcessed[]>([]);
   const [filteredMenuItems, setFilteredMenuItems] = React.useState<DisplayableMenuItem[]>([]);
 
-  // Fetch restaurants
   React.useEffect(() => {
     const fetchRestaurants = async () => {
       try {
@@ -77,13 +76,11 @@ export default function ContextSearch() {
     fetchRestaurants();
   }, []);
 
-  // Real-time search effect
   React.useEffect(() => {
     const performSearch = () => {
       const searchTerm = searchValue.trim().toLowerCase();
       
       if (!searchTerm) {
-        // Show all when no search term
         setFilteredRestaurants(restaurants);
         const allMenuItems = restaurants.flatMap((restaurant) =>
           (restaurant.menu || []).map((item) => ({
@@ -96,14 +93,12 @@ export default function ContextSearch() {
         return;
       }
 
-      // Filter restaurants
       const matchingRestaurants = restaurants.filter((restaurant) => {
         const nameMatch = restaurant.name.toLowerCase().includes(searchTerm);
         const cuisineMatch = restaurant.cuisine.toLowerCase().includes(searchTerm);
         return nameMatch || cuisineMatch;
       });
 
-      // Filter menu items
       const matchingMenuItems: DisplayableMenuItem[] = [];
       
       restaurants.forEach((restaurant) => {
@@ -131,7 +126,6 @@ export default function ContextSearch() {
     performSearch();
   }, [searchValue, restaurants]);
 
-  // Handle input change with forced re-render
   const handleInputChange = React.useCallback((value: string) => {
     setSearchValue(value);
   }, []);
@@ -140,7 +134,7 @@ export default function ContextSearch() {
     <div className="flex items-center justify-center my-4 dark">
       <Command 
         className="rounded-lg border shadow-md md:min-w-[500px] max-w-2xl"
-        shouldFilter={false} // Disable internal filtering since we handle it ourselves
+        shouldFilter={false}
       >
         <CommandInput
           placeholder="Search restaurants or menu items..."
