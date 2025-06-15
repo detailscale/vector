@@ -44,3 +44,5 @@ next-env.d.ts
 
 # test datas
 /public/testData
+
+package-lock.json
