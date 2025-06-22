@@ -28,16 +28,40 @@ export default function InternalOrderButton({
         : [];
 
       cart.push(newItem);
-
       localStorage.setItem("cartItems", JSON.stringify(cart));
-      toast.success(<div className="font-outfit">Item added to cart</div>, {
-        description: (
-          <div className="font-outfit">{itemName} added to cart</div>
-        ),
-      });
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+
+      toast.success(
+        <div className="font-outfit select-none">Item added to cart</div>,
+        {
+          description: (
+            <div className="font-outfit select-none">
+              <span>{itemName}</span> added to cart
+            </div>
+          ),
+        },
+      );
     } catch (error) {
       console.error("Failed to update cart in localStorage", error);
-      toast.error("Failed to add item to cart");
+      toast.error(
+        <div className="font-outfit select-none">
+          Failed to add item to cart
+        </div>,
+        {
+          action: {
+            label: <div className="font-outfit select-none">Clear Cart</div>,
+            onClick: () => {
+              localStorage.removeItem("cartItems");
+              window.dispatchEvent(new CustomEvent("cartUpdated"));
+            },
+          },
+          description: (
+            <div className="font-outfit italic select-none">
+              Clearing cart may resolve the issue.
+            </div>
+          ),
+        },
+      );
     }
   };
 
