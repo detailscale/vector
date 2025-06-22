@@ -2,13 +2,14 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import DynamicLucideIcon from "@/components/coreUI/customIcons";
-import { Ban, Clock, icons, ShoppingCart, Users, Wifi } from "lucide-react";
+import { Ban, Clock, icons, Users, Wifi } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import InternalOrderButton from "@/components/coreUI/internalCoreUI/internalOrderButton";
 
 interface MenuItem {
   name: string;
-  price: string;
+  price: number;
   description: string;
 }
 
@@ -154,10 +155,10 @@ export default function CompactStoreListDrawerItems({
                       </div>
 
                       {restaurant.status[0].receivingOrders == "true" ? (
-                        <Button className="cursor-pointer w-22">
-                          <ShoppingCart />
-                          Order
-                        </Button>
+                        <InternalOrderButton
+                          itemName={item.name}
+                          price={item.price}
+                        />
                       ) : (
                         <Button className="w-32" disabled>
                           <Ban />

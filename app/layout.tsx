@@ -1,6 +1,7 @@
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import React from "react";
+import { Toaster } from "sonner";
 
 const outfit = Outfit({
   variable: "--font-geist-sans",
@@ -14,7 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} antialiased`}>{children}</body>
+      <body className={`${outfit.variable} antialiased`}>
+        <main>{children}</main>
+        <Toaster />
+      </body>
     </html>
   );
 }
