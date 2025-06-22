@@ -30,8 +30,10 @@ export default function InternalOrderButton({
       cart.push(newItem);
 
       localStorage.setItem("cartItems", JSON.stringify(cart));
-      toast.success("Item added to cart", {
-        description: `${itemName} added to cart`,
+      toast.success(<div className="font-outfit">Item added to cart</div>, {
+        description: (
+          <div className="font-outfit">{itemName} added to cart</div>
+        ),
       });
     } catch (error) {
       console.error("Failed to update cart in localStorage", error);
