@@ -51,7 +51,6 @@ const iconMap: { [key: string]: LucideIcon } = {
 export default function ContextSearch() {
   const [searchValue, setSearchValue] = React.useState("");
   const [restaurants, setRestaurants] = React.useState<RestaurantProcessed[]>([]);
-  const [filteredRestaurants, setFilteredRestaurants] = React.useState<RestaurantProcessed[]>([]);
   const [filteredMenuItems, setFilteredMenuItems] = React.useState<DisplayableMenuItem[]>([]);
 
   React.useEffect(() => {
@@ -82,7 +81,6 @@ export default function ContextSearch() {
       const searchTerm = searchValue.trim().toLowerCase();
       
       if (!searchTerm) {
-        setFilteredRestaurants(restaurants);
         const allMenuItems = restaurants.flatMap((restaurant) =>
           (restaurant.menu || []).map((item) => ({
             restaurantName: restaurant.name,
@@ -94,14 +92,7 @@ export default function ContextSearch() {
         return;
       }
 
-      const matchingRestaurants = restaurants.filter((restaurant) => {
-        const nameMatch = restaurant.name.toLowerCase().includes(searchTerm);
-        const cuisineMatch = restaurant.cuisine.toLowerCase().includes(searchTerm);
-        return nameMatch || cuisineMatch;
-      });
-
       const matchingMenuItems: DisplayableMenuItem[] = [];
-      
       restaurants.forEach((restaurant) => {
         if (restaurant.menu && Array.isArray(restaurant.menu)) {
           restaurant.menu.forEach((item) => {
@@ -119,8 +110,6 @@ export default function ContextSearch() {
           });
         }
       });
-
-      setFilteredRestaurants(matchingRestaurants);
       setFilteredMenuItems(matchingMenuItems);
     };
 
@@ -138,7 +127,7 @@ export default function ContextSearch() {
         shouldFilter={false}
       >
         <CommandInput
-          placeholder="Search restaurants or menu items..."
+          placeholder="Search menu items..."
           value={searchValue}
           onValueChange={handleInputChange}
         />
@@ -149,7 +138,7 @@ export default function ContextSearch() {
               : "No results found."}
           </CommandEmpty>
 
-          {filteredRestaurants.length > 0 && (
+          {/*{filteredRestaurants.length > 0 && (
             <CommandGroup heading="Restaurants">
               {filteredRestaurants.map((restaurant) => {
                 const IconComponent = restaurant.icon;
@@ -169,7 +158,7 @@ export default function ContextSearch() {
                 );
               })}
             </CommandGroup>
-          )}
+          )}*/}
 
           {filteredMenuItems.length > 0 && (
             <CommandGroup heading="Menu Items">
@@ -184,10 +173,10 @@ export default function ContextSearch() {
                     <IconComponent className="h-4 w-4 text-orange-500" />
                     <div className="flex flex-col flex-1">
                       <span className="font-medium">
-                        {menuItem.restaurantName} / {menuItem.item.name}
+                        {menuItem.item.name}
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        {menuItem.item.description}
+                        {menuItem.restaurantName}
                       </span>
                     </div>
                     <span className="text-sm font-medium text-green-600">
