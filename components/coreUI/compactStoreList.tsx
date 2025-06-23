@@ -10,7 +10,7 @@ import CompactStoreListDrawerItems from "@/components/coreUI/internalCoreUI/comp
 
 interface MenuItem {
   name: string;
-  price: string;
+  price: number;
   description: string;
 }
 
