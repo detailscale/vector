@@ -11,6 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { addToCart } from "@/components/coreUI/internalCoreUI/internalOrderButton"
 
 interface MenuItem {
   name: string;
@@ -178,6 +179,7 @@ export default function ContextSearch() {
                   <CommandItem
                     key={`menu-${menuItem.restaurantName}-${menuItem.item.name}-${index}`}
                     className="flex items-center gap-3 p-3"
+                    onSelect={() => addToCart(menuItem.item.name, parseFloat(menuItem.item.price))}
                   >
                     <IconComponent className="h-4 w-4 text-orange-500" />
                     <div className="flex flex-col flex-1">
