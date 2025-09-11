@@ -65,7 +65,7 @@ export default function TopBar() {
               <Button className="w-8 h-8 bg-[#171717] rounded-sm border border-[#2f2f2f] p-2 cursor-pointer hover:bg-[#262626] transition-all duration-150 ease-in-out">
                 {badgeCount > 0 && (
                   <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-xs text-white leading-none select-none font-outfit pb-[1px] tabular-nums">
+                    <span className="text-xs text-white leading-none select-none font-mono pb-[1px]">
                       {badgeCount}
                     </span>
                   </div>
