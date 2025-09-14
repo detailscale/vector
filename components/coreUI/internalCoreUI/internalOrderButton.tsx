@@ -15,7 +15,7 @@ interface InternalOrderButtonProps {
   price: number;
 }
 
-export function addToCart(itemName:string, price:number) {
+export function addToCart(itemName: string, price: number) {
   try {
     const newItem: CartItem = { itemName, price };
     const existingCartJSON = localStorage.getItem("cartItems");
@@ -40,9 +40,7 @@ export function addToCart(itemName:string, price:number) {
   } catch (error) {
     console.error("Failed to update cart in localStorage", error);
     toast.error(
-      <div className="font-outfit select-none">
-        Failed to add item to cart
-      </div>,
+      <div className="font-outfit select-none">Failed to add item to cart</div>,
       {
         action: {
           label: <div className="font-outfit select-none">Clear Cart</div>,
@@ -53,7 +51,7 @@ export function addToCart(itemName:string, price:number) {
         },
         description: (
           <div className="font-outfit italic select-none">
-            Clearing cart may resolve the issue.
+            Contact administrator if the issue persists.
           </div>
         ),
       },
@@ -66,7 +64,7 @@ export default function InternalOrderButton({
   price,
 }: InternalOrderButtonProps) {
   const handleOrderClick = () => {
-    addToCart(itemName, price)
+    addToCart(itemName, price);
   };
 
   return (
