@@ -45,10 +45,11 @@ export default function CartButton() {
     }
   };
 
-  const getCartCount = () => {
-    const items = getCartItems();
-    return items.length;
-  };
+  // ICYNI
+  // const getCartCount = () => {
+  //   const items = getCartItems();
+  //   return items.length;
+  // };
 
   const groupCartItems = (items: CartItem[]): GroupedCartItem[] => {
     const grouped: { [key: string]: GroupedCartItem } = {};
