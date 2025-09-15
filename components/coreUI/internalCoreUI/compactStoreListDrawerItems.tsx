@@ -100,21 +100,6 @@ export default function CompactStoreListDrawerItems({
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-orange-500" />
-                    <span className="text-sm font-medium text-neutral-300">
-                      Approx. Wait Time
-                    </span>
-                  </div>
-                  <span className="text-sm text-neutral-200">
-                    {restaurant.status[0].queueTimeMin}{" "}
-                    {restaurant.status[0].queueTimeMin === 1
-                      ? "Minute"
-                      : "Minutes"}
-                  </span>
-                </div>
-
                 <div className="pt-2 border-t border-neutral-800">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-neutral-300">

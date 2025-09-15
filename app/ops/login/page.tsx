@@ -1,5 +1,5 @@
 import React from "react";
-import { Phone, User } from "lucide-react";
+import { BugPlay, Phone } from "lucide-react";
 
 export default function Page() {
   return (
@@ -7,7 +7,7 @@ export default function Page() {
       <div className="min-h-screen bg-black text-white flex">
         <div className="flex-1 p-8">
           <div className="max-w-md">
-            <h1 className="text-4xl font-bold mb-12">NOT Bloomberg</h1>
+            <h1 className="text-4xl font-bold mb-12">Operator Panel</h1>
 
             <div className="space-y-6">
               <div>
@@ -32,8 +32,11 @@ export default function Page() {
             </div>
 
             <div className="mt-8">
-              <a href="#" className="text-cyan-400 hover:text-cyan-300 text-sm">
-                Forgot Login Name or Password?
+              <a
+                href="/login"
+                className="text-cyan-400 hover:text-cyan-300 text-sm"
+              >
+                Redirect to Student Login
               </a>
             </div>
 
@@ -45,10 +48,12 @@ export default function Page() {
                 </a>
               </div>
               <div className="flex items-center text-sm">
-                <User className="h-4 w-4 mr-2" />
-                <a href="#" className="text-cyan-400 hover:text-cyan-300">
-                  Create a New Login
-                </a>
+                <BugPlay className="h-4 w-4 mr-2" />
+                <button id="thisIsUsedInDevIgnoreIt">
+                  <p className="text-cyan-400 hover:text-cyan-300 cursor-pointer">
+                    Attach Debugger
+                  </p>
+                </button>
               </div>
             </div>
 
@@ -60,7 +65,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="flex-1 p-8">
+        <div className="flex-1 p-8 md:flex hidden">
           <div className="max-w-lg">
             <h2 className="text-lg mb-6">
               Select Language for Analytics and Communication Functions:
@@ -93,7 +98,15 @@ export default function Page() {
         </div>
 
         <div className="absolute bottom-4 left-8 right-8 text-xs text-neutral-400 leading-relaxed">
-          <p>Insert Disclaimer</p>
+          <p className="text-pretty">
+            This product&apos;s design is inspired by the visual language of
+            financial terminal interfaces and is not affiliated with, endorsed
+            by, or sponsored by Bloomberg L.P. Bloomberg
+            <span className="font-sans">&reg;</span> and Bloomberg Terminal
+            <span className="font-sans">&reg;</span> are registered trademarks
+            of Bloomberg L.P. Any resemblance in appearance or functionality is
+            purely stylistic.
+          </p>
         </div>
       </div>
     </main>

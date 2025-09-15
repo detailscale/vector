@@ -107,6 +107,16 @@ export default function LoginPage() {
                   Request support
                 </a>
               </span>
+              <br />
+              <span className="text-sm text-neutral-400">
+                If you're a seller, please log in{" "}
+                <a
+                  href="/ops/login"
+                  className="text-blue-400 hover:text-blue-300 hover:underline"
+                >
+                  here
+                </a>
+              </span>
             </div>
           </CardContent>
         </Card>
