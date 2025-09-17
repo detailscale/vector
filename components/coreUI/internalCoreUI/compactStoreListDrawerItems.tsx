@@ -38,6 +38,8 @@ interface CompactStoreListDrawerItemsProps {
 export default function CompactStoreListDrawerItems({
   restaurant,
 }: CompactStoreListDrawerItemsProps) {
+  // ensure queueCount comparison works even if the source data provides it as a string
+  const queueCount = Number(restaurant.status?.[0]?.queueCount ?? 0);
   return (
     <DrawerContent className="dark font-outfit fixed bottom-0 left-0 right-0 w-full max-w-2xl mx-auto flex flex-col rounded-t-[10px] h-[80%] outline-none">
       <div className="flex-1 overflow-y-auto sidebar">
@@ -95,8 +97,7 @@ export default function CompactStoreListDrawerItems({
                     </span>
                   </div>
                   <span className="text-sm text-neutral-200">
-                    {restaurant.status[0].queueCount}{" "}
-                    {restaurant.status[0].queueCount === 1 ? "Order" : "Orders"}
+                    {queueCount} {queueCount === 1 ? "Order" : "Orders"}
                   </span>
                 </div>
 
