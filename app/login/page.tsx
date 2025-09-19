@@ -1,7 +1,10 @@
 "use client";
 
+// TODO: rate limiting, validate SID client-side
+
 import type React from "react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,10 +21,30 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // USAGE: submitted password goes to a var studentId, password
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/login/client", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId, password }),
+      });
+      if (!res.ok) {
+        setError("please check your credentials");
+        return;
+      }
+      router.push("/");
+    } catch (err) {
+      setError("network error");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -69,7 +92,7 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Password starts with pass@...."
+                    placeholder="Your SID password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="h-11 pr-10 bg-neutral-700 border-neutral-600 text-neutral-100 placeholder:text-neutral-500 focus:ring-blue-500 focus:border-blue-500"
@@ -89,11 +112,17 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {error && (
+                <div className="text-sm text-red-400 text-center">
+                  Cannot sign in: {error}
+                </div>
+              )}
               <Button
                 type="submit"
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={submitting}
+                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60"
               >
-                Sign in
+                {submitting ? "Executing" : "Sign In"}
               </Button>
             </form>
 

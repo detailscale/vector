@@ -10,6 +10,13 @@
 !.yarn/releases
 !.yarn/versions
 pnpm-workspace.yaml
+/xauth/node_modules
+
+# auth server secrets
+/xauth/.env
+/xauth/orders
+/xauth/users
+/xauth/stores
 
 # testing
 /coverage
