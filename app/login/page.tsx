@@ -1,6 +1,6 @@
 "use client";
 
-// TODO: rate limiting, validate SID client-side
+// TODO: rate limiting, validate SID client-side, skip login on valid token
 
 import type React from "react";
 import { useState } from "react";
