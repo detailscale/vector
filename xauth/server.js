@@ -151,14 +151,11 @@ app.post("/login/client", async (req, res) => {
     const { username, password } = req.body || {};
     creds = username && password ? { username, password } : null;
   }
-  if (!creds)
-    return res
-      .status(400)
-      .json({ error: "missing credentials (use Basic auth or JSON body)" });
+  if (!creds) return res.status(400).json({ error: "!token" });
   const user = findUserFromCsv("client", creds.username);
-  if (!user) return res.status(401).json({ error: "invalid credentials" });
+  if (!user) return res.status(401).json({ error: "bad token" });
   const ok = await bcrypt.compare(creds.password, user.hash);
-  if (!ok) return res.status(401).json({ error: "invalid credentials" });
+  if (!ok) return res.status(401).json({ error: "bad token" });
   const token = signToken({ username: user.username, role: "client" });
   res.setHeader("authorization", `Bearer ${token}`);
   res.json({ token });
@@ -170,14 +167,11 @@ app.post("/login/seller", async (req, res) => {
     const { username, password } = req.body || {};
     creds = username && password ? { username, password } : null;
   }
-  if (!creds)
-    return res
-      .status(400)
-      .json({ error: "missing credentials (use Basic auth or JSON body)" });
+  if (!creds) return res.status(400).json({ error: "!token" });
   const user = findUserFromCsv("seller", creds.username);
-  if (!user) return res.status(401).json({ error: "invalid credentials" });
+  if (!user) return res.status(401).json({ error: "bad token" });
   const ok = await bcrypt.compare(creds.password, user.hash);
-  if (!ok) return res.status(401).json({ error: "invalid credentials" });
+  if (!ok) return res.status(401).json({ error: "bad token" });
   const token = signToken({
     username: user.username,
     role: "seller",
@@ -189,7 +183,7 @@ app.post("/login/seller", async (req, res) => {
 
 app.get("/stores.json", (req, res) => {
   const p = verifyAuthHeader(req);
-  if (!p) return res.status(401).json({ error: "invalid token" });
+  if (!p) return res.status(401).json({ error: "bad token" });
   const files = fs.readdirSync(STORES_DIR).filter((f) => f.endsWith(".json"));
   const arr = files
     .map((f) => {
@@ -217,23 +211,23 @@ app.get("/stores.json", (req, res) => {
 app.post("/store/:storeName/edit", (req, res) => {
   const token = verifyAuthHeader(req);
   if (!token || token.role !== "seller")
-    return res.status(401).json({ error: "seller token required" });
+    return res.status(401).json({ error: "bad role" });
   const storeName = req.params.storeName;
   if (token.storeName && token.storeName !== storeName)
-    return res.status(403).json({ error: "token store mismatch" });
+    return res.status(403).json({ error: "store mismatch" });
   const store = loadStore(storeName);
   if (!store) return res.status(404).json({ error: "store not found" });
   const body = req.body || {};
   const { path: propPath, value } = body;
   if (typeof propPath !== "string")
-    return res.status(400).json({ error: "path required (dot syntax)" });
+    return res.status(400).json({ error: "!path" });
 
   const parts = propPath.split(".");
   if (parts.length === 1) {
     const k = parts[0];
     if (k === "id") {
       if (typeof value !== "number")
-        return res.status(400).json({ error: "id must be number" });
+        return res.status(400).json({ error: "bad id" });
       store.id = value;
     } else if (k === "name") {
       store.name = String(value);
@@ -241,10 +235,12 @@ app.post("/store/:storeName/edit", (req, res) => {
       store.cuisine = String(value);
     } else if (k === "menu") {
       if (!Array.isArray(value))
-        return res.status(400).json({ error: "menu must be array" });
+        return res.status(400).json({ error: "bad menu" });
       store.menu = value;
     } else {
-      return res.status(400).json({ error: "field not editable" });
+      return res
+        .status(400)
+        .json({ error: "internal (critical) error, report this asap!" });
     }
     saveStore(storeName, store);
     return res.json({ ok: true, store });
@@ -258,30 +254,31 @@ app.post("/store/:storeName/edit", (req, res) => {
     let v = value;
     if (typeof v === "string") v = v === "true";
     if (typeof v !== "boolean")
-      return res.status(400).json({ error: "receivingOrders must be boolean" });
+      return res.status(400).json({ error: "bad receivingOrders format" });
     if (!Array.isArray(store.status)) store.status = [{}];
     store.status[0].receivingOrders = String(v);
     saveStore(storeName, store);
     return res.json({ ok: true, store });
   }
 
-  return res.status(400).json({ error: "unsupported path or not editable" });
+  return res
+    .status(400)
+    .json({ error: "internal (critical) error, report this asap!" });
 });
 
 app.post("/orderPlacement", (req, res) => {
   const token = verifyAuthHeader(req);
   if (!token || token.role !== "client")
-    return res.status(401).json({ error: "client token required" });
+    return res.status(401).json({ error: "bad role" });
   const body = req.body;
   let storeName = body && body.storeName;
   let items = body && body.items;
   if (!storeName && Array.isArray(body))
     return res.status(400).json({
-      error: "please include storeName in body when sending items array",
+      error: "!storeName",
     });
-  if (!storeName) return res.status(400).json({ error: "storeName required" });
-  if (!Array.isArray(items))
-    return res.status(400).json({ error: "items array required" });
+  if (!storeName) return res.status(400).json({ error: "!storeName" });
+  if (!Array.isArray(items)) return res.status(400).json({ error: "!items" });
   const store = loadStore(storeName);
   if (!store) return res.status(404).json({ error: "store not found" });
 
@@ -300,7 +297,7 @@ app.post("/orderPlacement", (req, res) => {
 app.get("/getOrders", (req, res) => {
   const token = verifyAuthHeader(req);
   if (!token || token.role !== "seller")
-    return res.status(401).json({ error: "seller token required" });
+    return res.status(401).json({ error: "bad role" });
   const storeName = token.storeName;
   if (!storeName)
     return res.status(400).json({ error: "token missing storeName" });
@@ -313,15 +310,14 @@ app.get("/getOrders", (req, res) => {
 app.post("/updateOrders", (req, res) => {
   const token = verifyAuthHeader(req);
   if (!token || token.role !== "seller")
-    return res.status(401).json({ error: "seller token required" });
+    return res.status(401).json({ error: "bad role" });
   const storeName = token.storeName;
-  if (!storeName)
-    return res.status(400).json({ error: "token missing storeName" });
+  if (!storeName) return res.status(400).json({ error: "!storeName" });
   const { oid, status } = req.body || {};
   if (!oid || typeof status !== "number")
-    return res.status(400).json({ error: "oid and numeric status required" });
+    return res.status(400).json({ error: "!oid" });
   if (![1, 2, 3].includes(status))
-    return res.status(400).json({ error: "status must be 1,2 or 3" });
+    return res.status(400).json({ error: "bad status" });
   const orders = loadOrders(storeName);
   const idx = orders.findIndex((o) => o.oid === oid);
   if (idx === -1) return res.status(404).json({ error: "order not found" });
