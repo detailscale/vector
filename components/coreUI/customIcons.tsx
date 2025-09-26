@@ -9,7 +9,7 @@ const DynamicLucideIcon: React.FC<DynamicLucideIconProps> = ({
   iconName,
   ...props
 }) => {
-  const LucideIcon = icons[iconName] || Soup; // Use Soup as fallback
+  const LucideIcon = icons[iconName] || Soup;
 
   return (
     <div className="w-10 h-10 bg-neutral-800 rounded-md flex items-center justify-center border border-neutral-700">

@@ -8,16 +8,18 @@ import { toast } from "sonner";
 interface CartItem {
   itemName: string;
   price: number;
+  storeName?: string;
 }
 
 interface InternalOrderButtonProps {
   itemName: string;
   price: number;
+  storeName?: string;
 }
 
-export function addToCart(itemName: string, price: number) {
+export function addToCart(itemName: string, price: number, storeName?: string) {
   try {
-    const newItem: CartItem = { itemName, price };
+    const newItem: CartItem = { itemName, price, storeName };
     const existingCartJSON = localStorage.getItem("cartItems");
     const cart: CartItem[] = existingCartJSON
       ? JSON.parse(existingCartJSON)
@@ -62,9 +64,10 @@ export function addToCart(itemName: string, price: number) {
 export default function InternalOrderButton({
   itemName,
   price,
+  storeName,
 }: InternalOrderButtonProps) {
   const handleOrderClick = () => {
-    addToCart(itemName, price);
+    addToCart(itemName, price, storeName);
   };
 
   return (

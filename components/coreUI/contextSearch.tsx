@@ -11,7 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { addToCart } from "@/components/coreUI/internalCoreUI/internalOrderButton"
+import { addToCart } from "@/components/coreUI/internalCoreUI/internalOrderButton";
 
 interface MenuItem {
   name: string;
@@ -50,8 +50,12 @@ const iconMap: { [key: string]: LucideIcon } = {
 
 export default function ContextSearch() {
   const [searchValue, setSearchValue] = React.useState("");
-  const [restaurants, setRestaurants] = React.useState<RestaurantProcessed[]>([]);
-  const [filteredMenuItems, setFilteredMenuItems] = React.useState<DisplayableMenuItem[]>([]);
+  const [restaurants, setRestaurants] = React.useState<RestaurantProcessed[]>(
+    [],
+  );
+  const [filteredMenuItems, setFilteredMenuItems] = React.useState<
+    DisplayableMenuItem[]
+  >([]);
 
   React.useEffect(() => {
     const fetchRestaurants = async () => {
@@ -79,14 +83,14 @@ export default function ContextSearch() {
   React.useEffect(() => {
     const performSearch = () => {
       const searchTerm = searchValue.trim().toLowerCase();
-      
+
       if (!searchTerm) {
         const allMenuItems = restaurants.flatMap((restaurant) =>
           (restaurant.menu || []).map((item) => ({
             restaurantName: restaurant.name,
             restaurantIcon: restaurant.icon,
             item: item,
-          }))
+          })),
         );
         setFilteredMenuItems(allMenuItems);
         return;
@@ -97,9 +101,13 @@ export default function ContextSearch() {
         if (restaurant.menu && Array.isArray(restaurant.menu)) {
           restaurant.menu.forEach((item) => {
             const nameMatch = item.name.toLowerCase().includes(searchTerm);
-            const descMatch = (item.description || '').toLowerCase().includes(searchTerm);
-            const restMatch = restaurant.name.toLowerCase().includes(searchTerm);
-            
+            const descMatch = (item.description || "")
+              .toLowerCase()
+              .includes(searchTerm);
+            const restMatch = restaurant.name
+              .toLowerCase()
+              .includes(searchTerm);
+
             if (nameMatch || descMatch || restMatch) {
               matchingMenuItems.push({
                 restaurantName: restaurant.name,
@@ -122,7 +130,7 @@ export default function ContextSearch() {
 
   return (
     <div className="flex items-center justify-center my-4 dark">
-      <Command 
+      <Command
         className="rounded-lg border shadow-md md:min-w-[500px] max-w-2xl"
         shouldFilter={false}
       >
@@ -168,13 +176,17 @@ export default function ContextSearch() {
                   <CommandItem
                     key={`menu-${menuItem.restaurantName}-${menuItem.item.name}-${index}`}
                     className="flex items-center gap-3 p-3"
-                    onSelect={() => addToCart(menuItem.item.name, parseFloat(menuItem.item.price))}
+                    onSelect={() =>
+                      addToCart(
+                        menuItem.item.name,
+                        parseFloat(menuItem.item.price),
+                        menuItem.restaurantName,
+                      )
+                    }
                   >
                     <IconComponent className="h-4 w-4 text-orange-500" />
                     <div className="flex flex-col flex-1">
-                      <span className="font-medium">
-                        {menuItem.item.name}
-                      </span>
+                      <span className="font-medium">{menuItem.item.name}</span>
                       <span className="text-sm text-muted-foreground">
                         {menuItem.restaurantName}
                       </span>

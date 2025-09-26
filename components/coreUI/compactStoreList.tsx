@@ -2,10 +2,7 @@
 
 import * as React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Drawer,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerTrigger } from "@/components/ui/drawer";
 import CompactStoreListDrawerItems from "@/components/coreUI/internalCoreUI/compactStoreListDrawerItems";
 
 interface MenuItem {
@@ -39,7 +36,7 @@ export default function CompactStoreList() {
   React.useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await fetch("/testData/stores.json");
+        const response = await fetch("/api/stores", { cache: "no-store" });
         if (!response.ok) {
           console.error("HTTP error ", response.status);
         }

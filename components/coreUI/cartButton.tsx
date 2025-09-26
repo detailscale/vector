@@ -15,6 +15,7 @@ import {
 interface CartItem {
   itemName: string;
   price: number;
+  storeName?: string;
 }
 
 interface GroupedCartItem {
@@ -74,13 +75,12 @@ export default function CartButton() {
     setCartItems(newItems);
     setBadgeCount(newItems.length);
 
-    // Dispatch custom event to update other components
     window.dispatchEvent(new Event("cartUpdated"));
   };
 
-  const addItem = (itemName: string, price: number) => {
+  const addItem = (itemName: string, price: number, storeName?: string) => {
     const currentItems = getCartItems();
-    const newItem: CartItem = { itemName, price };
+    const newItem: CartItem = { itemName, price, storeName };
     const updatedItems = [...currentItems, newItem];
     updateCart(updatedItems);
     toast.success(
@@ -224,7 +224,9 @@ export default function CartButton() {
                       variant="outline"
                       size="sm"
                       className="h-8 w-8 p-0"
-                      onClick={() => addItem(item.itemName, item.price)}
+                      onClick={() =>
+                        addItem(item.itemName, item.price, undefined)
+                      }
                     >
                       <Plus className="h-4 w-4" />
                     </Button>

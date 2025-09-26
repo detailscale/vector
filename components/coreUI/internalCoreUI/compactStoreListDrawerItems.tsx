@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import DynamicLucideIcon from "@/components/coreUI/customIcons";
-import { Ban, Clock, icons, Users, Wifi } from "lucide-react";
+import { Ban, icons, Users, Wifi } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import InternalOrderButton from "@/components/coreUI/internalCoreUI/internalOrderButton";
@@ -38,7 +38,6 @@ interface CompactStoreListDrawerItemsProps {
 export default function CompactStoreListDrawerItems({
   restaurant,
 }: CompactStoreListDrawerItemsProps) {
-  // ensure queueCount comparison works even if the source data provides it as a string
   const queueCount = Number(restaurant.status?.[0]?.queueCount ?? 0);
   return (
     <DrawerContent className="dark font-outfit fixed bottom-0 left-0 right-0 w-full max-w-2xl mx-auto flex flex-col rounded-t-[10px] h-[80%] outline-none">
@@ -144,6 +143,7 @@ export default function CompactStoreListDrawerItems({
                         <InternalOrderButton
                           itemName={item.name}
                           price={item.price}
+                          storeName={restaurant.name}
                         />
                       ) : (
                         <Button className="w-32" disabled>
