@@ -172,6 +172,17 @@ app.post("/login/seller", async (req, res) => {
   if (!user) return res.status(401).json({ error: "bad token" });
   const ok = await bcrypt.compare(creds.password, user.hash);
   if (!ok) return res.status(401).json({ error: "bad token" });
+  if (user.storeName) {
+    const store = loadStore(user.storeName);
+    if (!store) {
+      console.error(
+        `seller ${user.username} assigned to missing store '${user.storeName}'`,
+      );
+      return res
+        .status(400)
+        .json({ error: "store assigned to user not found" });
+    }
+  }
   const token = signToken({
     username: user.username,
     role: "seller",
@@ -392,34 +403,6 @@ app.post("/updateOrders", (req, res) => {
   saveOrders(storeName, orders);
   res.json({ ok: true, order: orders[idx] });
 });
-
-function ensureSampleStore() {
-  const sampleName = "ts1";
-  if (!fs.existsSync(storeFilePath(sampleName))) {
-    const s = {
-      id: 1,
-      name: sampleName,
-      pageURL: "",
-      ratings: 0.0,
-      cuisine: "test",
-      icon: "Store",
-      menu: [
-        { name: "test", price: "0", description: "itemDesc" },
-        { name: "test2", price: "0", description: "itemDesc" },
-      ],
-      status: [
-        {
-          isOnline: "true",
-          queueCount: "0",
-          queueTimeMin: "0",
-          receivingOrders: "true",
-        },
-      ],
-    };
-    saveStore(sampleName, s);
-  }
-}
-ensureSampleStore();
 
 let lastClearedAt = null;
 function weeklyClearChecker() {
