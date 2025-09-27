@@ -334,7 +334,14 @@ app.post("/orderPlacement", (req, res) => {
       const itemNames = itemsOfStore
         .map((i) => i.itemName || i.name)
         .filter(Boolean);
-      const order = { time, id, oid, items: itemNames, status: 1 };
+      const order = {
+        time,
+        id,
+        oid,
+        items: itemNames,
+        status: 1,
+        clientUsername: token.username,
+      };
       const orders = loadOrders(sName);
       orders.push(order);
       saveOrders(sName, orders);
@@ -364,7 +371,14 @@ app.post("/orderPlacement", (req, res) => {
   const oid = makeOid4hex();
   const time = utcIsoMsNow();
   const itemNames = items.map((i) => i.itemName || i.name).filter(Boolean);
-  const order = { time, id, oid, items: itemNames, status: 1 };
+  const order = {
+    time,
+    id,
+    oid,
+    items: itemNames,
+    status: 1,
+    clientUsername: token.username,
+  };
 
   const orders = loadOrders(storeName);
   orders.push(order);
