@@ -270,17 +270,84 @@ app.post("/orderPlacement", (req, res) => {
   const token = verifyAuthHeader(req);
   if (!token || token.role !== "client")
     return res.status(401).json({ error: "bad role" });
+
   const body = req.body;
+
+  if (Array.isArray(body)) {
+    const itemsArr = body;
+    if (itemsArr.length === 0) return res.status(400).json({ error: "!items" });
+
+    for (const it of itemsArr) {
+      if (!it || typeof it !== "object")
+        return res.status(400).json({ error: "bad item" });
+      if (!it.storeName || typeof it.storeName !== "string")
+        return res.status(400).json({ error: "!storeName" });
+      const nm = it.itemName || it.name;
+      if (!nm || typeof nm !== "string")
+        return res.status(400).json({ error: "!itemName" });
+    }
+
+    const groups = new Map();
+    for (const it of itemsArr) {
+      const s = it.storeName;
+      if (!groups.has(s)) groups.set(s, []);
+      groups.get(s).push(it);
+    }
+
+    for (const [sName, itemsOfStore] of groups.entries()) {
+      const store = loadStore(sName);
+      if (!store)
+        return res
+          .status(404)
+          .json({ error: "store not found", storeName: sName });
+      const menuNames = new Set(
+        Array.isArray(store.menu) ? store.menu.map((m) => String(m.name)) : [],
+      );
+      for (const it of itemsOfStore) {
+        const nm = it.itemName || it.name;
+        if (!menuNames.has(nm)) {
+          return res.status(400).json({
+            error: "item not found",
+            storeName: sName,
+            itemName: nm,
+          });
+        }
+      }
+    }
+
+    const created = [];
+    for (const [sName, itemsOfStore] of groups.entries()) {
+      const id = nextOrderIdForStore(sName);
+      const oid = makeOid4hex();
+      const time = utcIsoMsNow();
+      const itemNames = itemsOfStore
+        .map((i) => i.itemName || i.name)
+        .filter(Boolean);
+      const order = { time, id, oid, items: itemNames, status: 1 };
+      const orders = loadOrders(sName);
+      orders.push(order);
+      saveOrders(sName, orders);
+      created.push({ storeName: sName, order });
+    }
+
+    return res.json({ ok: true, orders: created });
+  }
+
   let storeName = body && body.storeName;
   let items = body && body.items;
-  if (!storeName && Array.isArray(body))
-    return res.status(400).json({
-      error: "!storeName",
-    });
   if (!storeName) return res.status(400).json({ error: "!storeName" });
   if (!Array.isArray(items)) return res.status(400).json({ error: "!items" });
   const store = loadStore(storeName);
   if (!store) return res.status(404).json({ error: "store not found" });
+
+  const menuNames = new Set(
+    Array.isArray(store.menu) ? store.menu.map((m) => String(m.name)) : [],
+  );
+  for (const it of items) {
+    const nm = it && (it.itemName || it.name);
+    if (!nm || !menuNames.has(nm))
+      return res.status(400).json({ error: "item not found", itemName: nm });
+  }
 
   const id = nextOrderIdForStore(storeName);
   const oid = makeOid4hex();
