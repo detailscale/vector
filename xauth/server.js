@@ -418,6 +418,29 @@ app.post("/updateOrders", (req, res) => {
   res.json({ ok: true, order: orders[idx] });
 });
 
+app.get("/myOrders", (req, res) => {
+  const token = verifyAuthHeader(req);
+  if (!token || token.role !== "client")
+    return res.status(401).json({ error: "bad role" });
+
+  const files = fs
+    .readdirSync(ORDERS_DIR)
+    .filter((f) => f.startsWith("orders-") && f.endsWith(".json"));
+
+  const results = [];
+  for (const f of files) {
+    const storeName = f.slice("orders-".length, -".json".length);
+    const orders = loadOrders(storeName);
+    for (const o of orders) {
+      if (o && o.clientUsername === token.username) {
+        results.push({ storeName, ...o });
+      }
+    }
+  }
+
+  res.json(results);
+});
+
 let lastClearedAt = null;
 function weeklyClearChecker() {
   const now = new Date();
