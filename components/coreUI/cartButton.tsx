@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
+import InternalCheckoutButton from "./internalCoreUI/internalCheckoutButton";
 import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -225,7 +226,12 @@ export default function CartButton() {
                       size="sm"
                       className="h-8 w-8 p-0"
                       onClick={() =>
-                        addItem(item.itemName, item.price, undefined)
+                        addItem(
+                          item.itemName,
+                          item.price,
+                          cartItems.find((i) => i.itemName === item.itemName)
+                            ?.storeName,
+                        )
                       }
                     >
                       <Plus className="h-4 w-4" />
@@ -250,9 +256,11 @@ export default function CartButton() {
                 </div>
               </div>
 
-              <Button className="w-full" size="lg">
-                Proceed to Checkout
-              </Button>
+              <InternalCheckoutButton
+                className="w-full"
+                size="lg"
+                onSuccess={() => setIsDialogOpen(false)}
+              />
             </>
           )}
         </div>
