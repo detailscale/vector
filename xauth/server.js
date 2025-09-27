@@ -386,19 +386,6 @@ app.post("/orderPlacement", (req, res) => {
   res.json({ ok: true, order });
 });
 
-app.get("/getOrders", (req, res) => {
-  const token = verifyAuthHeader(req);
-  if (!token || token.role !== "seller")
-    return res.status(401).json({ error: "bad role" });
-  const storeName = token.storeName;
-  if (!storeName)
-    return res.status(400).json({ error: "token missing storeName" });
-  const store = loadStore(storeName);
-  if (!store) return res.status(404).json({ error: "store not found" });
-  const orders = loadOrders(storeName);
-  res.json(orders);
-});
-
 app.post("/updateOrders", (req, res) => {
   const token = verifyAuthHeader(req);
   if (!token || token.role !== "seller")
@@ -418,27 +405,36 @@ app.post("/updateOrders", (req, res) => {
   res.json({ ok: true, order: orders[idx] });
 });
 
-app.get("/myOrders", (req, res) => {
+app.get("/getOrders", (req, res) => {
   const token = verifyAuthHeader(req);
-  if (!token || token.role !== "client")
-    return res.status(401).json({ error: "bad role" });
-
-  const files = fs
-    .readdirSync(ORDERS_DIR)
-    .filter((f) => f.startsWith("orders-") && f.endsWith(".json"));
-
-  const results = [];
-  for (const f of files) {
-    const storeName = f.slice("orders-".length, -".json".length);
-    const orders = loadOrders(storeName);
-    for (const o of orders) {
-      if (o && o.clientUsername === token.username) {
-        results.push({ storeName, ...o });
-      }
-    }
+  if (!token) {
+    return res.status(401).json({ error: "!token" });
   }
 
-  res.json(results);
+  if (token.role === "client") {
+    const files = fs
+      .readdirSync(ORDERS_DIR)
+      .filter((f) => f.startsWith("orders-") && f.endsWith(".json"));
+    const results = [];
+    for (const f of files) {
+      const storeName = f.slice("orders-".length, -".json".length);
+      const orders = loadOrders(storeName);
+      for (const o of orders) {
+        if (o && o.clientUsername === token.username) {
+          results.push({ storeName, ...o });
+        }
+      }
+    }
+    return res.json(results);
+  }
+
+  const storeName = token.storeName;
+  if (!storeName)
+    return res.status(400).json({ error: "token missing storeName" });
+  const store = loadStore(storeName);
+  if (!store) return res.status(404).json({ error: "store not found" });
+  const orders = loadOrders(storeName);
+  return res.json(orders);
 });
 
 let lastClearedAt = null;
