@@ -1,7 +1,44 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { BugPlay, Phone } from "lucide-react";
 
 export default function Page() {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/login/seller", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      if (!res.ok) {
+        try {
+          const data = await res.json();
+          setError(data?.error || "please check your credentials");
+        } catch {
+          setError("please check your credentials");
+        }
+        return;
+      }
+      router.push("/ops");
+    } catch {
+      setError("network error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <main className="blp_prop">
       <div className="min-h-screen bg-black text-white flex">
@@ -9,27 +46,48 @@ export default function Page() {
           <div className="max-w-md">
             <h1 className="text-4xl font-bold mb-12">Operator Panel</h1>
 
-            <div className="space-y-6">
+            <form onSubmit={onSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm mb-2">Login Name</label>
+                <label htmlFor="username" className="block text-sm mb-2">
+                  Login Name
+                </label>
                 <input
+                  id="username"
                   type="text"
-                  className="w-full bg-[#ff9e2a] text-black px-3 py-1 text-sm font-mono"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full bg-[#ff9e2a] text-black px-3 py-1 text-sm font-mono placeholder:text-black/60"
+                  placeholder="operator username"
+                  required
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-2">Password</label>
+                <label htmlFor="password" className="block text-sm mb-2">
+                  Password
+                </label>
                 <input
+                  id="password"
                   type="password"
-                  className="w-full bg-[#ff9e2a] text-black px-3 py-1 text-sm font-mono"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-[#ff9e2a] text-black px-3 py-1 text-sm font-mono placeholder:text-black/60"
+                  placeholder="password"
+                  required
                 />
               </div>
 
-              <button className="bg-neutral-600 text-white px-6 py-2 text-sm hover:bg-neutral-500 transition-colors">
-                Login
+              <button
+                type="submit"
+                disabled={submitting}
+                className="bg-neutral-600 uppercase disabled:opacity-60 text-white px-6 py-2 text-sm hover:bg-neutral-500 transition-colors"
+              >
+                {submitting ? "executing" : "login"}
               </button>
-            </div>
+              {error && (
+                <div className="text-sm text-red-400">fault: {error}</div>
+              )}
+            </form>
 
             <div className="mt-8">
               <a
@@ -67,45 +125,36 @@ export default function Page() {
 
         <div className="flex-1 p-8 md:flex hidden">
           <div className="max-w-lg">
-            <h2 className="text-lg mb-6">
-              Select Language for Analytics and Communication Functions:
-            </h2>
+            <h2 className="text-lg mb-6">Availble user accounts (local)</h2>
 
             <div className="grid grid-cols-3 gap-x-8 gap-y-2 text-sm">
               <div>
-                <div className="mb-1">▶ English</div>
-                <div className="text-orange-400">Español</div>
-                <div className="text-orange-400">Français</div>
-                <div className="text-orange-400">Deutsch</div>
+                <div className="mb-1">s</div>
+                <div className="text-orange-400">test1</div>
+                <div className="text-orange-400">test2</div>
+                <div className="text-orange-400">test3</div>
               </div>
               <div>
-                <div className="text-orange-400">Português</div>
-                <div className="text-orange-400">Italiano</div>
-                <div className="text-orange-400">繁體中文</div>
-              </div>
-              <div>
-                <div className="text-orange-400">한국어</div>
-                <div className="text-orange-400">简体中文</div>
-                <div className="text-orange-400">Русский</div>
+                <div className="text-orange-400">test4</div>
+                <div className="text-orange-400">test5</div>
               </div>
             </div>
 
             <div className="mt-8 text-sm">
-              <p>To customize your language experience</p>
-              <p>type LANG &lt;GO&gt; after login.</p>
+              <p>Contact [MASTER] for accounts database (in development)</p>
+              <p>For any issues, please reach out to support.</p>
             </div>
           </div>
         </div>
 
         <div className="absolute bottom-4 left-8 right-8 text-xs text-neutral-400 leading-relaxed">
           <p className="text-pretty">
-            This product&apos;s design is inspired by the visual language of
-            financial terminal interfaces and is not affiliated with, endorsed
-            by, or sponsored by Bloomberg L.P. Bloomberg
-            <span className="font-sans">&reg;</span> and Bloomberg Terminal
-            <span className="font-sans">&reg;</span> are registered trademarks
-            of Bloomberg L.P. Any resemblance in appearance or functionality is
-            purely stylistic.
+            Note: This login only works with operator accounts, for other users,
+            visit{" "}
+            <a href="/login" className="text-cyan-400 hover:text-cyan-300">
+              this page
+            </a>
+            .
           </p>
         </div>
       </div>
