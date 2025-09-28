@@ -419,9 +419,19 @@ app.get("/getOrders", (req, res) => {
     for (const f of files) {
       const storeName = f.slice("orders-".length, -".json".length);
       const orders = loadOrders(storeName);
+      const store = loadStore(storeName);
+      const priceMap = new Map(
+        Array.isArray(store?.menu)
+          ? store.menu.map((m) => [String(m.name), String(m.price)])
+          : [],
+      );
       for (const o of orders) {
         if (o && o.clientUsername === token.username) {
-          results.push({ storeName, ...o });
+          const { items: oldItems, ...rest } = o;
+          const items = Array.isArray(oldItems)
+            ? oldItems.map((n) => ({ name: n, price: priceMap.get(n) ?? null }))
+            : [];
+          results.push({ storeName, ...rest, items });
         }
       }
     }
@@ -434,7 +444,19 @@ app.get("/getOrders", (req, res) => {
   const store = loadStore(storeName);
   if (!store) return res.status(404).json({ error: "store not found" });
   const orders = loadOrders(storeName);
-  return res.json(orders);
+  const priceMap = new Map(
+    Array.isArray(store?.menu)
+      ? store.menu.map((m) => [String(m.name), String(m.price)])
+      : [],
+  );
+  const mapped = orders.map((o) => {
+    const { items: oldItems, ...rest } = o;
+    const items = Array.isArray(oldItems)
+      ? oldItems.map((n) => ({ name: n, price: priceMap.get(n) ?? null }))
+      : [];
+    return { ...rest, items };
+  });
+  return res.json(mapped);
 });
 
 let lastClearedAt = null;
