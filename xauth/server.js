@@ -151,11 +151,11 @@ app.post("/login/client", async (req, res) => {
     const { username, password } = req.body || {};
     creds = username && password ? { username, password } : null;
   }
-  if (!creds) return res.status(400).json({ error: "!token" });
+  if (!creds) return res.status(400).json({ error: "missing credentials" });
   const user = findUserFromCsv("client", creds.username);
-  if (!user) return res.status(401).json({ error: "bad token" });
+  if (!user) return res.status(401).json({ error: "invalid credentials" });
   const ok = await bcrypt.compare(creds.password, user.hash);
-  if (!ok) return res.status(401).json({ error: "bad token" });
+  if (!ok) return res.status(401).json({ error: "invalid credentials" });
   const token = signToken({ username: user.username, role: "client" });
   res.setHeader("authorization", `Bearer ${token}`);
   res.json({ token });
@@ -167,20 +167,20 @@ app.post("/login/seller", async (req, res) => {
     const { username, password } = req.body || {};
     creds = username && password ? { username, password } : null;
   }
-  if (!creds) return res.status(400).json({ error: "!token" });
+  if (!creds) return res.status(400).json({ error: "missing credentials" });
   const user = findUserFromCsv("seller", creds.username);
-  if (!user) return res.status(401).json({ error: "bad token" });
+  if (!user) return res.status(401).json({ error: "invalid credentials" });
   const ok = await bcrypt.compare(creds.password, user.hash);
-  if (!ok) return res.status(401).json({ error: "bad token" });
+  if (!ok) return res.status(401).json({ error: "invalid credentials" });
   if (user.storeName) {
     const store = loadStore(user.storeName);
     if (!store) {
-      console.error(
+      console.warn(
         `seller ${user.username} assigned to missing store '${user.storeName}'`,
       );
       return res
-        .status(400)
-        .json({ error: "store assigned to user not found" });
+        .status(501)
+        .json({ error: "major fault: store assigned to user not found" });
     }
   }
   const token = signToken({
