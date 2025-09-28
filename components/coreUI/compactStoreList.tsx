@@ -94,8 +94,8 @@ export default function CompactStoreList() {
                       {restaurant.cuisine}
                     </span>
                     <p className="text-xs">
-                      {restaurant.status[0].queueCount} Active{" "}
-                      {restaurant.status[0].queueCount === 1
+                      {Number(restaurant.status?.[0]?.queueCount ?? 0)} Active{" "}
+                      {Number(restaurant.status?.[0]?.queueCount ?? 0) === 1
                         ? "Order"
                         : "Orders"}
                     </p>
