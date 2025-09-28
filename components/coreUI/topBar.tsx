@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Bell, User } from "lucide-react";
+import { User } from "lucide-react";
 import CartButton from "./cartButton";
+import OrderTrackerButton from "./orderTrackerButton";
 
 export default function TopBar() {
   return (
@@ -15,9 +16,7 @@ export default function TopBar() {
             <div className="relative">
               <CartButton />
             </div>
-            <Button className="w-8 h-8 bg-[#171717] rounded-sm border border-[#2f2f2f] p-2 cursor-pointer hover:bg-[#262626] transition-all duration-150 ease-in-out">
-              <Bell />
-            </Button>
+            <OrderTrackerButton />
           </div>
         </div>
       </div>

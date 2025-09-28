@@ -190,7 +190,7 @@ export default function CartButton() {
 
         <div className="space-y-4">
           {groupedItems.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-muted-foreground text-base">
               Your cart is empty
             </div>
           ) : (
