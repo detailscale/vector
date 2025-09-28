@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const upstream = await fetch("http://localhost:5253/stores.json", {
+    const upstream = await fetch("http://localhost:5253/stores", {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",

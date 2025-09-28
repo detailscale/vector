@@ -192,7 +192,7 @@ app.post("/login/seller", async (req, res) => {
   res.json({ token });
 });
 
-app.get("/stores.json", (req, res) => {
+app.get("/stores", (req, res) => {
   const p = verifyAuthHeader(req);
   if (!p) return res.status(401).json({ error: "bad token" });
   const files = fs.readdirSync(STORES_DIR).filter((f) => f.endsWith(".json"));
