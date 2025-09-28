@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "invalid json" }, { status: 400 });
     }
 
-    const upstream = await fetch("http://localhost:5253/orderPlacement", {
+    const upstream = await fetch(`${process.env.BACKEND_URL}/orderPlacement`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${jwt}`,

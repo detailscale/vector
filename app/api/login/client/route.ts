@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     const basic = Buffer.from(`${user}:${password}`).toString("base64");
 
-    const upstream = await fetch("http://localhost:5253/login/client", {
+    const upstream = await fetch(`${process.env.BACKEND_URL}/login/client`, {
       method: "POST",
       headers: {
         Authorization: `Basic ${basic}`,
