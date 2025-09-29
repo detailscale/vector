@@ -149,6 +149,12 @@ app.use(express.json());
 
 app.get("/", (req, res) => res.send({ ok: true }));
 
+app.get("/whoami", (req, res) => {
+  const token = verifyAuthHeader(req);
+  if (!token) return res.status(401).json({ error: "invalid credentials" });
+  return res.json({ username: token.username, role: token.role });
+});
+
 app.post("/login/client", async (req, res) => {
   let creds = parseBasicAuth(req);
   if (!creds) {
