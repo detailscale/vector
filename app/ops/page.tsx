@@ -8,12 +8,13 @@ export default function Page() {
   const navRef = useRef<OpsNavHandle>(null);
   const todoButtonLabel = "TRIAGE >>";
   const inprogressButtonLabel = "COMPLETE >>";
+  const finalButtonLabel = "PAID >>";
 
   type Order = {
     id: number;
     oid: string;
     items: string[];
-    status: "received" | "making" | "done";
+    status: "received" | "making" | "done" | "paid";
     clientUsername: string;
     time: string;
     startAt: number;
@@ -47,6 +48,8 @@ export default function Page() {
         return "making";
       case 3:
         return "done";
+      case 4:
+        return "paid";
       default:
         return "received";
     }
@@ -134,13 +137,18 @@ export default function Page() {
     const current = orders.find((o) => o.id === id);
     if (!current) return;
 
-    const nextStatus: Order["status"] =
-      current.status === "received"
-        ? "making"
-        : current.status === "making"
-          ? "done"
-          : "done";
-    const statusNumber = nextStatus === "making" ? 2 : 3;
+    let nextStatus: Order["status"];
+    let statusNumber: 2 | 3 | 4;
+    if (current.status === "received") {
+      nextStatus = "making";
+      statusNumber = 2;
+    } else if (current.status === "making") {
+      nextStatus = "done";
+      statusNumber = 3;
+    } else {
+      nextStatus = "paid";
+      statusNumber = 4;
+    }
 
     const prevOrders = orders;
     setOrders((prev) =>
@@ -220,14 +228,16 @@ export default function Page() {
                             </p>
                           ))}
                         </div>
-                        {o.status !== "done" && (
+                        {o.status !== "paid" && (
                           <button
                             onClick={() => advanceOrder(o.id)}
                             className="mt-1 text-center bg-white text-black text-xs py-1 hover:bg-neutral-200"
                           >
                             {o.status === "received"
                               ? todoButtonLabel
-                              : inprogressButtonLabel}
+                              : o.status === "making"
+                                ? inprogressButtonLabel
+                                : finalButtonLabel}
                           </button>
                         )}
                       </li>
