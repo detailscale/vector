@@ -2,12 +2,7 @@
 
 import Nav, { OpsNavHandle } from "@/components/coreUI/internalCoreUI/opsNav";
 import React, { useCallback, useState, useEffect, useRef } from "react";
-
-const exampleOrders = [
-  { id: 1, oid: "417a", items: ["item1", "item2"] },
-  { id: 2, oid: "418b", items: ["item3"] },
-  { id: 3, oid: "419c", items: ["item4", "item5", "item6"] },
-];
+import { toast } from "sonner";
 
 export default function Page() {
   const navRef = useRef<OpsNavHandle>(null);
@@ -19,22 +14,122 @@ export default function Page() {
     oid: string;
     items: string[];
     status: "received" | "making" | "done";
+    clientUsername: string;
+    time: string;
+    startAt: number;
   };
 
   const [orders, setOrders] = useState<Order[]>([]);
+  const knownOidsRef = useRef<Set<string>>(new Set());
+  const inFlightRef = useRef<boolean>(false);
+  const [nowMs, setNowMs] = useState<number>(Date.now());
+  const firstLoadDoneRef = useRef<boolean>(false);
 
-  const loadOrders = useCallback(() => {
-    setOrders(
-      exampleOrders.map((o) => ({
-        ...o,
-        status: "received",
-      })),
-    );
-    navRef.current?.flash();
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const formatDuration = (ms: number) => {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  };
+
+  const toUiStatus = (s: number): Order["status"] => {
+    switch (s) {
+      case 1:
+        return "received";
+      case 2:
+        return "making";
+      case 3:
+        return "done";
+      default:
+        return "received";
+    }
+  };
+
+  type orderType = {
+    time: string;
+    id: number;
+    oid: string;
+    status: number;
+    clientUsername: string;
+    items: Array<{ name: string; price: string | null }>;
+    storeName?: string;
+  };
+
+  const loadOrders = useCallback(async () => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+    try {
+      const res = await fetch("/api/getOrders", {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        toast.error("unexpected error on response");
+        return;
+      }
+      const data: orderType[] = await res.json();
+      const next = (Array.isArray(data) ? data : []).map((o) => ({
+        id: o.id,
+        oid: o.oid,
+        items: Array.isArray(o.items) ? o.items.map((it) => it.name) : [],
+        status: toUiStatus(Number(o.status)),
+        clientUsername: o.clientUsername,
+        time: new Date(o.time).toLocaleString(undefined, { hour12: false }),
+        startAt: new Date(o.time).getTime(),
+      }));
+
+      const fetchedOids = new Set(next.map((o) => o.oid));
+      const known = knownOidsRef.current;
+
+      let shouldFlash = false;
+      if (!firstLoadDoneRef.current) {
+        firstLoadDoneRef.current = true;
+      } else {
+        if (fetchedOids.size === 0) {
+          shouldFlash = false;
+        } else if (known.size === 0) {
+          shouldFlash = true;
+        } else {
+          for (const oid of fetchedOids) {
+            if (!known.has(oid)) {
+              shouldFlash = true;
+              break;
+            }
+          }
+        }
+      }
+      if (shouldFlash) navRef.current?.flash();
+      // always replace snapshot of known oids to current fetch (may be empty)
+      knownOidsRef.current = fetchedOids;
+
+      setOrders(next);
+    } catch (e) {
+      toast.error("unexpected error loading orders");
+    } finally {
+      inFlightRef.current = false;
+    }
   }, []);
 
   useEffect(() => {
-    loadOrders();
+    let cancelled = false;
+    const run = async () => {
+      if (cancelled) return;
+      await loadOrders();
+    };
+    run();
+    const id = setInterval(run, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
   }, [loadOrders]);
   const advanceOrder = (id: number) =>
     setOrders((prev) =>
@@ -83,16 +178,25 @@ export default function Page() {
                         className="border border-neutral-700 p-2 flex flex-col gap-1 bg-neutral-950"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <p>item #{o.id}</p>
+                          <p>
+                            #{o.id} {">>"} {o.clientUsername}
+                          </p>
                           <p className="text-[#ffa11c]">
                             oid {`>`}
                             {o.oid}
                             {`<`}
                           </p>
                         </div>
-                        <div className="text-xs text-neutral-400 space-y-0.5">
+                        <p className="text-xs">@ {o.time}</p>
+                        <p className="text-xs">
+                          ALIVE TIME: {formatDuration(nowMs - o.startAt)}
+                        </p>
+                        <div className="text-lg text-white space-y-0.5 mt-2">
                           {o.items.map((it, i) => (
-                            <p key={i}>{it}</p>
+                            <p key={i}>
+                              <span className="text-neutral-400">{i + 1}.</span>{" "}
+                              {it}
+                            </p>
                           ))}
                         </div>
                         {o.status !== "done" && (

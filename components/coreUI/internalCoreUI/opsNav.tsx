@@ -57,6 +57,7 @@ const OpsNav = React.forwardRef<OpsNavHandle, object>(
       hour12: false,
       hour: "2-digit",
       minute: "2-digit",
+      second: "2-digit",
     });
 
     const bgClass = flashOn
@@ -70,7 +71,7 @@ const OpsNav = React.forwardRef<OpsNavHandle, object>(
         >
           <Link href="/">
             <div className="relative select-none hover:text-neutral-100 ease-in-out duration-300">
-              OPS PANEL
+              operator panel
             </div>
           </Link>
           <div></div>
