@@ -140,6 +140,10 @@ function utcIsoMsNow() {
   return new Date().toISOString();
 }
 
+function isActiveStatus(status) {
+  return status === 1 || status === 2;
+}
+
 const app = express();
 app.use(express.json());
 
@@ -212,7 +216,7 @@ app.get("/stores", (req, res) => {
   for (const s of arr) {
     const storeName = s.name;
     const orders = loadOrders(storeName);
-    const q = orders.filter((o) => o.status !== 3).length;
+    const q = orders.filter((o) => isActiveStatus(o.status)).length;
     if (Array.isArray(s.status) && s.status[0])
       s.status[0].queueCount = String(q);
   }
@@ -395,7 +399,7 @@ app.post("/updateOrders", (req, res) => {
   const { oid, status } = req.body || {};
   if (!oid || typeof status !== "number")
     return res.status(400).json({ error: "!oid" });
-  if (![1, 2, 3].includes(status))
+  if (![1, 2, 3, 4].includes(status))
     return res.status(400).json({ error: "bad status" });
   const orders = loadOrders(storeName);
   const idx = orders.findIndex((o) => o.oid === oid);
