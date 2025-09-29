@@ -107,7 +107,6 @@ export default function Page() {
         }
       }
       if (shouldFlash) navRef.current?.flash();
-      // always replace snapshot of known oids to current fetch (may be empty)
       knownOidsRef.current = fetchedOids;
 
       setOrders(next);
@@ -131,22 +130,42 @@ export default function Page() {
       clearInterval(id);
     };
   }, [loadOrders]);
-  const advanceOrder = (id: number) =>
+  const advanceOrder = async (id: number) => {
+    const current = orders.find((o) => o.id === id);
+    if (!current) return;
+
+    const nextStatus: Order["status"] =
+      current.status === "received"
+        ? "making"
+        : current.status === "making"
+          ? "done"
+          : "done";
+    const statusNumber = nextStatus === "making" ? 2 : 3;
+
+    const prevOrders = orders;
     setOrders((prev) =>
-      prev.map((o) =>
-        o.id === id
-          ? {
-              ...o,
-              status:
-                o.status === "received"
-                  ? "making"
-                  : o.status === "making"
-                    ? "done"
-                    : "done",
-            }
-          : o,
-      ),
+      prev.map((o) => (o.id === id ? { ...o, status: nextStatus } : o)),
     );
+
+    try {
+      const res = await fetch("/api/updateOrders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ oid: current.oid, status: statusNumber }),
+      });
+      if (!res.ok) {
+        setOrders(prevOrders);
+        const err = await res.json().catch(() => ({}) as any);
+        toast.error(err?.error || "failed to update order");
+      }
+    } catch (e) {
+      setOrders(prevOrders);
+      toast.error("network error updating order");
+    }
+  };
 
   const columns: Array<"received" | "making" | "done"> = [
     "received",
