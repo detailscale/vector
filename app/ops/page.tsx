@@ -207,9 +207,11 @@ export default function Page() {
                           </p>
                         </div>
                         <p className="text-xs">@ {o.time}</p>
-                        <p className="text-xs">
-                          ALIVE TIME: {formatDuration(nowMs - o.startAt)}
-                        </p>
+                        {o.status !== "done" && (
+                          <p className="text-xs">
+                            ALIVE TIME: {formatDuration(nowMs - o.startAt)}
+                          </p>
+                        )}
                         <div className="text-lg text-white space-y-0.5 mt-2">
                           {o.items.map((it, i) => (
                             <p key={i}>
