@@ -4,6 +4,13 @@ import type { NextRequest } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (pathname === "/login" || pathname === "/ops/login") {
+    const token = req.cookies.get("jwt")?.value;
+    if (token) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
     return NextResponse.next();
   }
 

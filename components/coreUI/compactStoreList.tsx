@@ -4,6 +4,7 @@ import * as React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerTrigger } from "@/components/ui/drawer";
 import CompactStoreListDrawerItems from "@/components/coreUI/internalCoreUI/compactStoreListDrawerItems";
+import ContextSearch from "@/components/coreUI/contextSearch";
 
 interface MenuItem {
   name: string;
@@ -59,7 +60,6 @@ export default function CompactStoreList() {
   if (loading) {
     return (
       <div className="w-full max-w-2xl mx-auto dark">
-        <h2 className="text-xl mb-3">Explore</h2>
         <div className="grid xs:grid-cols-1 sm:grid-cols-2 gap-4">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
@@ -76,7 +76,7 @@ export default function CompactStoreList() {
 
   return (
     <div className="w-full max-w-2xl mx-auto dark">
-      <h2 className="text-xl mb-3">Explore</h2>
+      <ContextSearch restaurants={restaurants} />
       <div className="grid xs:grid-cols-1 sm:grid-cols-2 gap-4">
         {restaurants.map((restaurant) => (
           <Drawer key={restaurant.id}>

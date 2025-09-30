@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useImperativeHandle } from "react";
-import Link from "next/link";
 
 const flashCycles = 3;
 const flashOnDuration = 500;
@@ -57,6 +56,7 @@ const OpsNav = React.forwardRef<OpsNavHandle, object>(
       hour12: false,
       hour: "2-digit",
       minute: "2-digit",
+      second: "2-digit",
     });
 
     const bgClass = flashOn
@@ -64,17 +64,14 @@ const OpsNav = React.forwardRef<OpsNavHandle, object>(
       : "bg-[#171717] text-white";
 
     return (
-      <div className="blp_prop">
+      <div className="blp_prop mb-8.5">
         <nav
-          className={`grid h-8 flex-shrink-0 grid-cols-3 items-center ${bgClass} px-1 text-white text-sm`}
+          className={`fixed top-0 left-0 right-0 ${bgClass} flex items-center justify-between text-sm p-1`}
         >
-          <Link href="/">
-            <div className="relative select-none hover:text-neutral-100 ease-in-out duration-300">
-              OPS PANEL
-            </div>
-          </Link>
-          <div></div>
-          <div className="justify-self-end">{formattedTime}</div>
+          <span className="select-none hover:text-neutral-100 ease-in-out duration-300">
+            operator panel
+          </span>
+          <span className="justify-self-end">{formattedTime}</span>
         </nav>
       </div>
     );
