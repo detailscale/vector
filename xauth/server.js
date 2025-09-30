@@ -248,9 +248,7 @@ app.post("/store/:storeName/edit", (req, res) => {
   if (parts.length === 1) {
     const k = parts[0];
     if (k === "id") {
-      if (typeof value !== "number")
-        return res.status(400).json({ error: "invalid data" });
-      store.id = value;
+      return res.status(400).json({ error: "id is immutable" });
     } else if (k === "name") {
       store.name = String(value);
     } else if (k === "cuisine") {
