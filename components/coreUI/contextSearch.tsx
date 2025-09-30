@@ -13,13 +13,15 @@ import {
 } from "@/components/ui/command";
 import { addToCart } from "@/components/coreUI/internalCoreUI/internalOrderButton";
 
+type Price = number | string;
+
 interface MenuItem {
   name: string;
-  price: string;
-  description: string;
+  price: Price;
+  description?: string;
 }
 
-interface RestaurantJson {
+interface RestaurantIncoming {
   id: number;
   name: string;
   cuisine: string;
@@ -41,6 +43,10 @@ interface DisplayableMenuItem {
   item: MenuItem;
 }
 
+interface ContextSearchProps {
+  restaurants?: RestaurantIncoming[];
+}
+
 const iconMap: { [key: string]: LucideIcon } = {
   Pizza: Pizza,
   ChefHat: ChefHat,
@@ -48,7 +54,9 @@ const iconMap: { [key: string]: LucideIcon } = {
   Utensils: Utensils,
 };
 
-export default function ContextSearch() {
+export default function ContextSearch({
+  restaurants: restaurantsProp,
+}: ContextSearchProps) {
   const [searchValue, setSearchValue] = React.useState("");
   const [restaurants, setRestaurants] = React.useState<RestaurantProcessed[]>(
     [],
@@ -58,14 +66,25 @@ export default function ContextSearch() {
   >([]);
 
   React.useEffect(() => {
+    if (restaurantsProp !== undefined) {
+      const processedData: RestaurantProcessed[] = (restaurantsProp || []).map(
+        (restaurant) => ({
+          ...restaurant,
+          icon: iconMap[restaurant.icon] || Utensils,
+        }),
+      );
+      setRestaurants(processedData);
+      return;
+    }
+
     const fetchRestaurants = async () => {
       try {
-        const response = await fetch("/testData/stores.json");
+        const response = await fetch("/api/stores", { cache: "no-store" });
         if (!response.ok) {
           console.error("ID[3] HTTP error ", response.status);
           return;
         }
-        const data: RestaurantJson[] = await response.json();
+        const data: RestaurantIncoming[] = await response.json();
         const processedData: RestaurantProcessed[] = data.map((restaurant) => ({
           ...restaurant,
           icon: iconMap[restaurant.icon] || Utensils,
@@ -78,7 +97,8 @@ export default function ContextSearch() {
     };
 
     fetchRestaurants();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restaurantsProp]);
 
   React.useEffect(() => {
     const performSearch = () => {
@@ -146,32 +166,14 @@ export default function ContextSearch() {
               : "No results found."}
           </CommandEmpty>
 
-          {/*{filteredRestaurants.length > 0 && (
-            <CommandGroup heading="Restaurants">
-              {filteredRestaurants.map((restaurant) => {
-                const IconComponent = restaurant.icon;
-                return (
-                  <CommandItem
-                    key={`restaurant-${restaurant.id}`}
-                    className="flex items-center gap-3 p-3"
-                  >
-                    <IconComponent className="h-5 w-5 text-orange-500" />
-                    <div className="flex flex-col">
-                      <span className="font-medium">{restaurant.name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {restaurant.cuisine} Cuisine
-                      </span>
-                    </div>
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-          )}*/}
-
           {filteredMenuItems.length > 0 && (
             <CommandGroup heading="Menu Items">
               {filteredMenuItems.map((menuItem, index) => {
                 const IconComponent = menuItem.restaurantIcon;
+                const priceNumber =
+                  typeof menuItem.item.price === "number"
+                    ? menuItem.item.price
+                    : parseFloat(menuItem.item.price);
                 return (
                   <CommandItem
                     key={`menu-${menuItem.restaurantName}-${menuItem.item.name}-${index}`}
@@ -179,7 +181,7 @@ export default function ContextSearch() {
                     onSelect={() =>
                       addToCart(
                         menuItem.item.name,
-                        parseFloat(menuItem.item.price),
+                        priceNumber,
                         menuItem.restaurantName,
                       )
                     }
@@ -193,7 +195,9 @@ export default function ContextSearch() {
                     </div>
                     <span className="text-sm font-medium text-green-600">
                       <span className="text-xl text-neutral-100">
-                        {menuItem.item.price}
+                        {Number.isFinite(priceNumber)
+                          ? priceNumber
+                          : menuItem.item.price}
                       </span>{" "}
                       <span className="text-neutral-300 font-medium">THB</span>
                     </span>
