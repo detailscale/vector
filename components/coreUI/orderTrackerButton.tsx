@@ -120,14 +120,18 @@ export default function orderTrackerButton() {
                             ? "text-[#2196F3]"
                             : order.status === 2
                               ? "text-[#FF9800]"
-                              : "text-[#4CAF50]"
+                              : order.status === 3
+                                ? "text-[#0fb800]"
+                                : "text-neutral-400"
                         }`}
                       >
                         {order.status === 1
                           ? "received"
                           : order.status === 2
                             ? "making"
-                            : "done"}
+                            : order.status === 3
+                              ? "ready for pickup"
+                              : "completed"}
                       </p>
                       <p className="font-medium">total: {fmt(total)}</p>
                     </div>

@@ -14,10 +14,10 @@ interface MenuItem {
 }
 
 interface SystemStatus {
-  isOnline: string;
-  queueCount: number;
-  queueTimeMin: number;
-  receivingOrders: string;
+  isOnline: string | boolean;
+  queueCount: number | string;
+  queueTimeMin: number | string;
+  receivingOrders: string | boolean;
 }
 
 interface Restaurant {
@@ -38,7 +38,11 @@ interface CompactStoreListDrawerItemsProps {
 export default function CompactStoreListDrawerItems({
   restaurant,
 }: CompactStoreListDrawerItemsProps) {
-  const queueCount = Number(restaurant.status?.[0]?.queueCount ?? 0);
+  const status = restaurant.status?.[0];
+  const isOnline = status?.isOnline === true || status?.isOnline === "true";
+  const isReceiving =
+    status?.receivingOrders === true || status?.receivingOrders === "true";
+  const queueCount = Number(status?.queueCount ?? 0);
   return (
     <DrawerContent className="dark font-outfit fixed bottom-0 left-0 right-0 w-full max-w-2xl mx-auto flex flex-col rounded-t-[10px] h-[80%] outline-none">
       <div className="flex-1 overflow-y-auto sidebar">
@@ -71,7 +75,7 @@ export default function CompactStoreListDrawerItems({
                       POS System
                     </span>
                   </div>
-                  {restaurant.status[0].isOnline === "true" ? (
+                  {isOnline ? (
                     <Badge
                       variant="secondary"
                       className="bg-green-900/50 text-green-400 border border-green-800 font-normal"
@@ -105,7 +109,7 @@ export default function CompactStoreListDrawerItems({
                     <span className="text-sm font-medium text-neutral-300">
                       Order Status
                     </span>
-                    {restaurant.status[0].receivingOrders === "true" ? (
+                    {isReceiving ? (
                       <Badge className="bg-green-900/50 text-green-400 border border-green-800 font-normal">
                         Accepting Orders
                       </Badge>
@@ -139,7 +143,7 @@ export default function CompactStoreListDrawerItems({
                         </p>
                       </div>
 
-                      {restaurant.status[0].receivingOrders == "true" ? (
+                      {isReceiving ? (
                         <InternalOrderButton
                           itemName={item.name}
                           price={item.price}

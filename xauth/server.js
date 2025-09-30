@@ -140,10 +140,20 @@ function utcIsoMsNow() {
   return new Date().toISOString();
 }
 
+function isActiveStatus(status) {
+  return status === 1 || status === 2;
+}
+
 const app = express();
 app.use(express.json());
 
 app.get("/", (req, res) => res.send({ ok: true }));
+
+app.get("/whoami", (req, res) => {
+  const token = verifyAuthHeader(req);
+  if (!token) return res.status(401).json({ error: "invalid credentials" });
+  return res.json({ username: token.username, role: token.role });
+});
 
 app.post("/login/client", async (req, res) => {
   let creds = parseBasicAuth(req);
@@ -151,11 +161,11 @@ app.post("/login/client", async (req, res) => {
     const { username, password } = req.body || {};
     creds = username && password ? { username, password } : null;
   }
-  if (!creds) return res.status(400).json({ error: "!token" });
+  if (!creds) return res.status(400).json({ error: "missing credentials" });
   const user = findUserFromCsv("client", creds.username);
-  if (!user) return res.status(401).json({ error: "bad token" });
+  if (!user) return res.status(401).json({ error: "invalid credentials" });
   const ok = await bcrypt.compare(creds.password, user.hash);
-  if (!ok) return res.status(401).json({ error: "bad token" });
+  if (!ok) return res.status(401).json({ error: "invalid credentials" });
   const token = signToken({ username: user.username, role: "client" });
   res.setHeader("authorization", `Bearer ${token}`);
   res.json({ token });
@@ -167,20 +177,20 @@ app.post("/login/seller", async (req, res) => {
     const { username, password } = req.body || {};
     creds = username && password ? { username, password } : null;
   }
-  if (!creds) return res.status(400).json({ error: "!token" });
+  if (!creds) return res.status(400).json({ error: "missing credentials" });
   const user = findUserFromCsv("seller", creds.username);
-  if (!user) return res.status(401).json({ error: "bad token" });
+  if (!user) return res.status(401).json({ error: "invalid credentials" });
   const ok = await bcrypt.compare(creds.password, user.hash);
-  if (!ok) return res.status(401).json({ error: "bad token" });
+  if (!ok) return res.status(401).json({ error: "invalid credentials" });
   if (user.storeName) {
     const store = loadStore(user.storeName);
     if (!store) {
-      console.error(
+      console.warn(
         `seller ${user.username} assigned to missing store '${user.storeName}'`,
       );
       return res
-        .status(400)
-        .json({ error: "store assigned to user not found" });
+        .status(501)
+        .json({ error: "major fault: store assigned to user not found" });
     }
   }
   const token = signToken({
@@ -212,69 +222,77 @@ app.get("/stores", (req, res) => {
   for (const s of arr) {
     const storeName = s.name;
     const orders = loadOrders(storeName);
-    const q = orders.filter((o) => o.status !== 3).length;
+    const q = orders.filter((o) => isActiveStatus(o.status)).length;
     if (Array.isArray(s.status) && s.status[0])
       s.status[0].queueCount = String(q);
   }
   res.json(arr);
 });
 
-app.post("/store/:storeName/edit", (req, res) => {
+app.post("/editStore", (req, res) => {
   const token = verifyAuthHeader(req);
   if (!token || token.role !== "seller")
-    return res.status(401).json({ error: "bad role" });
-  const storeName = req.params.storeName;
-  if (token.storeName && token.storeName !== storeName)
-    return res.status(403).json({ error: "store mismatch" });
+    return res.status(401).json({ error: "unauthorized" });
+
+  const storeName = token.storeName;
+  if (!storeName) return res.status(400).json({ error: "!storeName" });
+
   const store = loadStore(storeName);
-  if (!store) return res.status(404).json({ error: "store not found" });
+  if (!store) return res.status(404).json({ error: "not found" });
+
   const body = req.body || {};
   const { path: propPath, value } = body;
   if (typeof propPath !== "string")
-    return res.status(400).json({ error: "!path" });
+    return res.status(400).json({ error: "invalid request" });
 
   const parts = propPath.split(".");
+
   if (parts.length === 1) {
     const k = parts[0];
     if (k === "id") {
-      if (typeof value !== "number")
-        return res.status(400).json({ error: "bad id" });
-      store.id = value;
+      return res.status(400).json({ error: "id is immutable" });
     } else if (k === "name") {
       store.name = String(value);
     } else if (k === "cuisine") {
       store.cuisine = String(value);
     } else if (k === "menu") {
       if (!Array.isArray(value))
-        return res.status(400).json({ error: "bad menu" });
+        return res.status(400).json({ error: "invalid data" });
+      for (const item of value) {
+        if (
+          !item ||
+          typeof item.name !== "string" ||
+          (item.price !== undefined &&
+            typeof item.price !== "number" &&
+            typeof item.price !== "string")
+        ) {
+          return res.status(400).json({ error: "invalid data" });
+        }
+      }
       store.menu = value;
     } else {
-      return res
-        .status(400)
-        .json({ error: "internal (critical) error, report this asap!" });
+      return res.status(400).json({ error: "unsupported operation" });
     }
     saveStore(storeName, store);
-    return res.json({ ok: true, store });
+    return res.json({ ok: true });
   }
 
   if (
+    parts.length === 2 &&
     parts[0] === "status" &&
-    parts[1] === "0" &&
-    parts[2] === "receivingOrders"
+    parts[1] === "receivingOrders"
   ) {
     let v = value;
     if (typeof v === "string") v = v === "true";
     if (typeof v !== "boolean")
-      return res.status(400).json({ error: "bad receivingOrders format" });
+      return res.status(400).json({ error: "invalid data" });
     if (!Array.isArray(store.status)) store.status = [{}];
-    store.status[0].receivingOrders = String(v);
+    store.status[0].receivingOrders = v;
     saveStore(storeName, store);
-    return res.json({ ok: true, store });
+    return res.json({ ok: true });
   }
 
-  return res
-    .status(400)
-    .json({ error: "internal (critical) error, report this asap!" });
+  return res.status(400).json({ error: "unsupported operation" });
 });
 
 app.post("/orderPlacement", (req, res) => {
@@ -395,7 +413,7 @@ app.post("/updateOrders", (req, res) => {
   const { oid, status } = req.body || {};
   if (!oid || typeof status !== "number")
     return res.status(400).json({ error: "!oid" });
-  if (![1, 2, 3].includes(status))
+  if (![1, 2, 3, 4].includes(status))
     return res.status(400).json({ error: "bad status" });
   const orders = loadOrders(storeName);
   const idx = orders.findIndex((o) => o.oid === oid);
@@ -457,6 +475,21 @@ app.get("/getOrders", (req, res) => {
     return { ...rest, items };
   });
   return res.json(mapped);
+});
+
+app.get("/listItems", (req, res) => {
+  const token = verifyAuthHeader(req);
+  if (!token || token.role !== "seller")
+    return res.status(401).json({ error: "unauthorized" });
+
+  const storeName = token.storeName;
+  if (!storeName) return res.status(400).json({ error: "!storeName" });
+
+  const store = loadStore(storeName);
+  if (!store) return res.status(404).json({ error: "store not found" });
+
+  const items = Array.isArray(store.menu) ? store.menu : [];
+  return res.json(items);
 });
 
 let lastClearedAt = null;
