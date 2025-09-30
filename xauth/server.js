@@ -232,23 +232,24 @@ app.get("/stores", (req, res) => {
 app.post("/store/:storeName/edit", (req, res) => {
   const token = verifyAuthHeader(req);
   if (!token || token.role !== "seller")
-    return res.status(401).json({ error: "bad role" });
+    return res.status(401).json({ error: "unauthorized" });
   const storeName = req.params.storeName;
   if (token.storeName && token.storeName !== storeName)
-    return res.status(403).json({ error: "store mismatch" });
+    return res.status(403).json({ error: "forbidden" });
   const store = loadStore(storeName);
-  if (!store) return res.status(404).json({ error: "store not found" });
+  if (!store) return res.status(404).json({ error: "not found" });
+
   const body = req.body || {};
   const { path: propPath, value } = body;
   if (typeof propPath !== "string")
-    return res.status(400).json({ error: "!path" });
+    return res.status(400).json({ error: "invalid request" });
 
   const parts = propPath.split(".");
   if (parts.length === 1) {
     const k = parts[0];
     if (k === "id") {
       if (typeof value !== "number")
-        return res.status(400).json({ error: "bad id" });
+        return res.status(400).json({ error: "invalid data" });
       store.id = value;
     } else if (k === "name") {
       store.name = String(value);
@@ -256,12 +257,10 @@ app.post("/store/:storeName/edit", (req, res) => {
       store.cuisine = String(value);
     } else if (k === "menu") {
       if (!Array.isArray(value))
-        return res.status(400).json({ error: "bad menu" });
+        return res.status(400).json({ error: "invalid data" });
       store.menu = value;
     } else {
-      return res
-        .status(400)
-        .json({ error: "internal (critical) error, report this asap!" });
+      return res.status(400).json({ error: "unsupported operation" });
     }
     saveStore(storeName, store);
     return res.json({ ok: true, store });
@@ -275,16 +274,14 @@ app.post("/store/:storeName/edit", (req, res) => {
     let v = value;
     if (typeof v === "string") v = v === "true";
     if (typeof v !== "boolean")
-      return res.status(400).json({ error: "bad receivingOrders format" });
+      return res.status(400).json({ error: "invalid data" });
     if (!Array.isArray(store.status)) store.status = [{}];
     store.status[0].receivingOrders = String(v);
     saveStore(storeName, store);
     return res.json({ ok: true, store });
   }
 
-  return res
-    .status(400)
-    .json({ error: "internal (critical) error, report this asap!" });
+  return res.status(400).json({ error: "unsupported operation" });
 });
 
 app.post("/orderPlacement", (req, res) => {
