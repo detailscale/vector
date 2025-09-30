@@ -229,13 +229,14 @@ app.get("/stores", (req, res) => {
   res.json(arr);
 });
 
-app.post("/store/:storeName/edit", (req, res) => {
+app.post("/editStore", (req, res) => {
   const token = verifyAuthHeader(req);
   if (!token || token.role !== "seller")
     return res.status(401).json({ error: "unauthorized" });
-  const storeName = req.params.storeName;
-  if (token.storeName && token.storeName !== storeName)
-    return res.status(403).json({ error: "forbidden" });
+
+  const storeName = token.storeName;
+  if (!storeName) return res.status(400).json({ error: "!storeName" });
+
   const store = loadStore(storeName);
   if (!store) return res.status(404).json({ error: "not found" });
 
@@ -245,6 +246,7 @@ app.post("/store/:storeName/edit", (req, res) => {
     return res.status(400).json({ error: "invalid request" });
 
   const parts = propPath.split(".");
+
   if (parts.length === 1) {
     const k = parts[0];
     if (k === "id") {
@@ -256,27 +258,38 @@ app.post("/store/:storeName/edit", (req, res) => {
     } else if (k === "menu") {
       if (!Array.isArray(value))
         return res.status(400).json({ error: "invalid data" });
+      for (const item of value) {
+        if (
+          !item ||
+          typeof item.name !== "string" ||
+          (item.price !== undefined &&
+            typeof item.price !== "number" &&
+            typeof item.price !== "string")
+        ) {
+          return res.status(400).json({ error: "invalid data" });
+        }
+      }
       store.menu = value;
     } else {
       return res.status(400).json({ error: "unsupported operation" });
     }
     saveStore(storeName, store);
-    return res.json({ ok: true, store });
+    return res.json({ ok: true });
   }
 
   if (
+    parts.length === 2 &&
     parts[0] === "status" &&
-    parts[1] === "0" &&
-    parts[2] === "receivingOrders"
+    parts[1] === "receivingOrders"
   ) {
     let v = value;
     if (typeof v === "string") v = v === "true";
     if (typeof v !== "boolean")
       return res.status(400).json({ error: "invalid data" });
     if (!Array.isArray(store.status)) store.status = [{}];
-    store.status[0].receivingOrders = String(v);
+    store.status[0].receivingOrders = v;
     saveStore(storeName, store);
-    return res.json({ ok: true, store });
+    return res.json({ ok: true });
   }
 
   return res.status(400).json({ error: "unsupported operation" });
