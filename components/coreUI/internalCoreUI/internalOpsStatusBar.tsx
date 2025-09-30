@@ -90,7 +90,7 @@ export default function StatusBar({ orders }: { orders: Order[] }) {
             </span>
           </div>
         </DialogTrigger>
-        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto dark blp-prop">
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto dark blp_prop">
           <DialogHeader>
             <DialogTitle className="blp_prop font-normal">
               store config menu

@@ -9,10 +9,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircleIcon, CircleAlert } from "lucide-react";
 
 type MenuItem = {
   name: string;
@@ -55,16 +56,15 @@ export default function EditButton() {
 
   const [receivingOrders, setReceivingOrders] = useState(false);
   const [savingReceiving, setSavingReceiving] = useState(false);
-  const handleSaveReceiving = async () => {
+  const setReceiving = async (value: boolean) => {
+    if (value === receivingOrders) return; // no-op
     try {
       setSavingReceiving(true);
-      await postEdit({
-        path: "status.receivingOrders",
-        value: receivingOrders,
-      });
-      toast.success("receiving orders updated");
+      await postEdit({ path: "status.receivingOrders", value });
+      setReceivingOrders(value);
+      toast.success(value ? "accepting new orders" : "paused new orders");
     } catch (e: any) {
-      toast.error(e.message || "failed to save setting");
+      toast.error(e.message || "failed to update setting");
     } finally {
       setSavingReceiving(false);
     }
@@ -162,11 +162,66 @@ export default function EditButton() {
               edit store options
             </DialogTitle>
           </DialogHeader>
-          <section className="space-y-2 py-2">
-            <Label htmlFor="store-name">store name</Label>
+
+          <section className="space-y-2 border p-3 rounded-md">
+            <Label className="text-xl">accepting orders</Label>
+            <Alert className="blp_prop">
+              <CircleAlert />
+              <AlertTitle>
+                User will not be able to place new orders if turned off
+              </AlertTitle>
+            </Alert>
+            <div className="flex items-center justify-between rounded-md border p-3 blp_prop">
+              <div className="text-sm text-muted-foreground">
+                OFF = pause new orders, ON = accepting new orders
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant={receivingOrders ? "default" : "outline"}
+                  onClick={() => setReceiving(true)}
+                  disabled={savingReceiving && receivingOrders}
+                >
+                  ACCEPT
+                </Button>
+                <Button
+                  variant={!receivingOrders ? "default" : "outline"}
+                  onClick={() => setReceiving(false)}
+                  disabled={savingReceiving && !receivingOrders}
+                >
+                  DENY
+                </Button>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-2 blp_prop border p-3 rounded-md">
+            <Label htmlFor="store-name" className="text-xl">
+              store name
+            </Label>
+            <Alert variant="destructive">
+              <AlertCircleIcon />
+              <AlertTitle className="">Warning</AlertTitle>
+              <AlertDescription>
+                <p className="mt-2">
+                  Changing store name is strongly discouraged, you will
+                  definitely need to:
+                </p>
+                <ul className="list-inside list-disc text-sm">
+                  <li>log out and log back in</li>
+                  <li>all existing orders will NOT work</li>
+                  <li>
+                    links to products/stores will be broken and no redirects
+                    will be created
+                  </li>
+                </ul>
+                <p className="underline underline-offset-1">
+                  Contact support first BEFORE making any changes
+                </p>
+              </AlertDescription>
+            </Alert>
             <Input
               id="store-name"
-              placeholder="enter new store name"
+              placeholder="new store name"
               value={nameValue}
               onChange={(e) => setNameValue(e.target.value)}
             />
@@ -179,29 +234,6 @@ export default function EditButton() {
               </Button>
             </div>
           </section>
-
-          <div className="h-px bg-border my-3" />
-
-          <section className="space-y-2 py-2">
-            <Label>accepting orders</Label>
-            <div className="flex items-center justify-between rounded-md border p-3">
-              <div className="text-sm text-muted-foreground">
-                toggle to accept or pause new orders
-              </div>
-              <Switch
-                checked={receivingOrders}
-                onCheckedChange={setReceivingOrders}
-                aria-label="receiving orders"
-              />
-            </div>
-            <div className="flex justify-end">
-              <Button onClick={handleSaveReceiving} disabled={savingReceiving}>
-                {savingReceiving ? "saving" : "save"}
-              </Button>
-            </div>
-          </section>
-
-          <div className="h-px bg-border my-3" />
 
           <section className="py-2">
             <Dialog open={itemsOpen} onOpenChange={setItemsOpen}>
@@ -217,7 +249,7 @@ export default function EditButton() {
                   </DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-3 blp-prop">
+                <div className="space-y-3 blp_prop">
                   <div className="flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">
                       warning: all changes are immediate and live
