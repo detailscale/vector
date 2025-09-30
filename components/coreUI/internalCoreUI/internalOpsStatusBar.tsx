@@ -83,7 +83,9 @@ export default function StatusBar({ orders }: { orders: Order[] }) {
       <Dialog>
         <DialogTrigger asChild>
           <div>
-            <span className="text-[#FF0000]">override paid order</span>
+            <span className="text-[#FF0000] hover:cursor-pointer">
+              override paid order
+            </span>
           </div>
         </DialogTrigger>
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto dark font-outfit">
