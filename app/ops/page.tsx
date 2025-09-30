@@ -252,7 +252,9 @@ export default function Page() {
           </div>
         </div>
       </div>
-      <StatusBar orders={orders} />
+      <div className="mt-8.5">
+        <StatusBar orders={orders} />
+      </div>
     </main>
   );
 }

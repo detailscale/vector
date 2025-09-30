@@ -64,7 +64,7 @@ const OpsNav = React.forwardRef<OpsNavHandle, object>(
       : "bg-[#171717] text-white";
 
     return (
-      <div className="blp_prop mb-8">
+      <div className="blp_prop mb-8.5">
         <nav
           className={`fixed top-0 left-0 right-0 ${bgClass} flex items-center justify-between text-sm p-1`}
         >
