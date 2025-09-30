@@ -115,9 +115,6 @@ export default function StatusBar({ orders }: { orders: Order[] }) {
                       </p>
                     </div>
                     <p className="text-xs">@ {o.time}</p>
-                    <p className="text-xs">
-                      ALIVE TIME: {formatDuration(nowMs - o.startAt)}
-                    </p>
                     <div className="text-lg text-white space-y-0.5 mt-2">
                       {o.items.map((it, i) => (
                         <p key={i}>
