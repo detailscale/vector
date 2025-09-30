@@ -8,6 +8,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import EditButton from "./internalEditStoreOptionButton";
 
 type Order = {
   id: number;
@@ -84,70 +86,95 @@ export default function StatusBar({ orders }: { orders: Order[] }) {
         <DialogTrigger asChild>
           <div>
             <span className="text-[#FF0000] hover:cursor-pointer">
-              override paid order
+              {"<mod>"}
             </span>
           </div>
         </DialogTrigger>
-        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto dark font-outfit">
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto dark blp-prop">
           <DialogHeader>
             <DialogTitle className="blp_prop font-normal">
-              override paid orders ({counts.paid})
+              store config menu
             </DialogTitle>
           </DialogHeader>
-          <div className="blp_prop space-y-2">
-            {paidOrders.length === 0 ? (
-              <div className="text-xs text-neutral-400 italic">list empty</div>
-            ) : (
-              <ul className="flex flex-col gap-2">
-                {paidOrders.map((o) => (
-                  <li
-                    key={o.id}
-                    className="border border-neutral-700 p-2 flex flex-col gap-1 bg-neutral-950"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p>
-                        #{o.id} {">>"} {o.clientUsername}
-                      </p>
-                      <p className="text-[#ffa11c]">
-                        oid {`>`}
-                        {o.oid}
-                        {`<`}
-                      </p>
+          <div className="blp_prop">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="dark w-full">
+                  <span className="hover:cursor-pointer">
+                    override paid order
+                  </span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto dark">
+                <DialogHeader>
+                  <DialogTitle className="blp_prop font-normal">
+                    override paid orders ({counts.paid})
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="blp_prop space-y-2">
+                  {paidOrders.length === 0 ? (
+                    <div className="text-xs text-neutral-400 italic">
+                      list empty
                     </div>
-                    <p className="text-xs">@ {o.time}</p>
-                    <div className="text-lg text-white space-y-0.5 mt-2">
-                      {o.items.map((it, i) => (
-                        <p key={i}>
-                          <span className="text-neutral-400">{i + 1}.</span>{" "}
-                          {it}
-                        </p>
+                  ) : (
+                    <ul className="flex flex-col gap-2">
+                      {paidOrders.map((o) => (
+                        <li
+                          key={o.id}
+                          className="border border-neutral-700 p-2 flex flex-col gap-1 bg-neutral-950"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <p>
+                              #{o.id} {">>"} {o.clientUsername}
+                            </p>
+                            <p className="text-[#ffa11c]">
+                              oid {`>`}
+                              {o.oid}
+                              {`<`}
+                            </p>
+                          </div>
+                          <p className="text-xs">@ {o.time}</p>
+                          <div className="text-lg text-white space-y-0.5 mt-2">
+                            {o.items.map((it, i) => (
+                              <p key={i}>
+                                <span className="text-neutral-400">
+                                  {i + 1}.
+                                </span>{" "}
+                                {it}
+                              </p>
+                            ))}
+                          </div>
+                          <div className="mt-1 flex gap-1">
+                            {/* might want to change the btn text to be more descriptive */}
+                            <button
+                              onClick={() => moveTo(o.oid, 1)}
+                              className="flex-1 text-center bg-white text-black text-xs py-1 hover:bg-neutral-200"
+                            >
+                              MV@1
+                            </button>
+                            <button
+                              onClick={() => moveTo(o.oid, 2)}
+                              className="flex-1 text-center bg-white text-black text-xs py-1 hover:bg-neutral-200"
+                            >
+                              MV@2
+                            </button>
+                            <button
+                              onClick={() => moveTo(o.oid, 3)}
+                              className="flex-1 text-center bg-white text-black text-xs py-1 hover:bg-neutral-200"
+                            >
+                              MV@3
+                            </button>
+                          </div>
+                        </li>
                       ))}
-                    </div>
-                    <div className="mt-1 flex gap-1">
-                      {/* might want to change the btn text to be more descriptive */}
-                      <button
-                        onClick={() => moveTo(o.oid, 1)}
-                        className="flex-1 text-center bg-white text-black text-xs py-1 hover:bg-neutral-200"
-                      >
-                        MV@1
-                      </button>
-                      <button
-                        onClick={() => moveTo(o.oid, 2)}
-                        className="flex-1 text-center bg-white text-black text-xs py-1 hover:bg-neutral-200"
-                      >
-                        MV@2
-                      </button>
-                      <button
-                        onClick={() => moveTo(o.oid, 3)}
-                        className="flex-1 text-center bg-white text-black text-xs py-1 hover:bg-neutral-200"
-                      >
-                        MV@3
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+                    </ul>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+          <div className="blp_prop">
+            <EditButton />
           </div>
         </DialogContent>
       </Dialog>
