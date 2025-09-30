@@ -97,7 +97,6 @@ export default function ContextSearch({
     };
 
     fetchRestaurants();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restaurantsProp]);
 
   React.useEffect(() => {
