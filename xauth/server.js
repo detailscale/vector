@@ -477,6 +477,21 @@ app.get("/getOrders", (req, res) => {
   return res.json(mapped);
 });
 
+app.get("/listItems", (req, res) => {
+  const token = verifyAuthHeader(req);
+  if (!token || token.role !== "seller")
+    return res.status(401).json({ error: "unauthorized" });
+
+  const storeName = token.storeName;
+  if (!storeName) return res.status(400).json({ error: "!storeName" });
+
+  const store = loadStore(storeName);
+  if (!store) return res.status(404).json({ error: "store not found" });
+
+  const items = Array.isArray(store.menu) ? store.menu : [];
+  return res.json(items);
+});
+
 let lastClearedAt = null;
 function weeklyClearChecker() {
   const now = new Date();
