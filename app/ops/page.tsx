@@ -1,5 +1,6 @@
 "use client";
 
+import StatusBar from "@/components/coreUI/internalCoreUI/internalOpsStatusBar";
 import Nav, { OpsNavHandle } from "@/components/coreUI/internalCoreUI/opsNav";
 import React, { useCallback, useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -251,6 +252,7 @@ export default function Page() {
           </div>
         </div>
       </div>
+      <StatusBar orders={orders} />
     </main>
   );
 }
